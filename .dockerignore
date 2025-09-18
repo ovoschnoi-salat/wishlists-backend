@@ -1,9 +1,6 @@
 .idea/
 .git/
-proto/
-gen/
+.data
 Dockerfile
-bobgen.yaml
-buf*.yaml
 vendor
 .gitignore
