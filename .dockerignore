@@ -1,0 +1,9 @@
+.idea/
+.git/
+proto/
+gen/
+Dockerfile
+bobgen.yaml
+buf*.yaml
+vendor
+.gitignore

@@ -1,0 +1,34 @@
+services:
+
+  db:
+    container_name: wishlists-db
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "wishlists"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASS}"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "${POSTGRES_DATA_FOLDER}:/var/lib/postgresql/data"
+    networks:
+      - backend_network
+
+
+  backend:
+    container_name: wishlists-backend
+    restart: unless-stopped
+    build:
+      dockerfile: ./Dockerfile
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    environment:
+      PG_DSN: "postgresql://postgres:postgres@wishlists-db:5432/wishlists"
+      PORT: "${BACKEND_PORT}"
+    networks:
+      - backend_network
+
+
+networks:
+  backend_network:
