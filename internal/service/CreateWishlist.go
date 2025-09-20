@@ -15,7 +15,6 @@ type CreateWishlistRequest struct {
 
 // CreateWishlist godoc
 // @Summary creates wishlist
-// @Description
 // @Tags user
 // @Param			wishlist	body		CreateWishlistRequest	true "request body"
 // @Accept json

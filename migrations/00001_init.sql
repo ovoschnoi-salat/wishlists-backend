@@ -18,10 +18,10 @@ CREATE TABLE IF NOT EXISTS friends
 
 CREATE TABLE IF NOT EXISTS friends_requests
 (
-    user_id_from BIGINT NOT NULL REFERENCES users (id),
     user_id_to   BIGINT NOT NULL REFERENCES users (id),
+    user_id_from BIGINT NOT NULL REFERENCES users (id),
 
-    PRIMARY KEY (user_id_from, user_id_to)
+    PRIMARY KEY (user_id_to, user_id_from)
 );
 
 CREATE INDEX IF NOT EXISTS friends_requests_user_id_to_idx ON friends_requests (user_id_to);
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS wishlists
     is_private  BOOLEAN NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS wishlists_access_list
+CREATE TABLE IF NOT EXISTS wishlist_access_list
 (
     list_id BIGINT NOT NULL REFERENCES wishlists (id),
     user_id BIGINT NOT NULL REFERENCES users (id),
@@ -43,11 +43,11 @@ CREATE TABLE IF NOT EXISTS wishlists_access_list
     PRIMARY KEY (list_id, user_id)
 );
 
-CREATE TABLE IF NOT EXISTS wishes
+CREATE TABLE IF NOT EXISTS wishlist_items
 (
     id          BIGSERIAL PRIMARY KEY,
     owner_id    BIGINT  NOT NULL REFERENCES users (id),
-    list_id     BIGINT  NOT NULL REFERENCES wishlists (id),
+    wishlist_id BIGINT  NOT NULL REFERENCES wishlists (id),
     title       TEXT    NOT NULL,
     description TEXT    NOT NULL,
     price       TEXT    NOT NULL,
@@ -61,8 +61,8 @@ CREATE TABLE IF NOT EXISTS wishes
 -- +goose Down
 -- +goose StatementBegin
 
-DROP TABLE IF EXISTS wishes;
-DROP TABLE IF EXISTS wishlists_access_list;
+DROP TABLE IF EXISTS wishlist_items;
+DROP TABLE IF EXISTS wishlist_access_list;
 DROP TABLE IF EXISTS wishlists;
 DROP TABLE IF EXISTS friends_requests;
 DROP TABLE IF EXISTS friends;

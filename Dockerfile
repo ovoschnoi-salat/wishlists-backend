@@ -5,8 +5,6 @@ WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
 
-RUN go install tool
-
 COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /app cmd/main.go
@@ -21,14 +19,10 @@ WORKDIR /
 
 COPY entrypoint.sh /
 COPY migrations /migrations
-COPY docs /docs
-
 
 COPY --from=build-stage /app /app
 
 RUN ls -la
 #USER nonroot:nonroot
 
-ENTRYPOINT ["/entrypoint.sh"]
-
-CMD ["/app"]
+ENTRYPOINT ["/app"]

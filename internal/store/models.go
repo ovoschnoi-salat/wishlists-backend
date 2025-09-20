@@ -14,26 +14,14 @@ type Friend struct {
 }
 
 type FriendsRequest struct {
-	UserIDFrom int64 `json:"user_id_from"`
 	UserIDTo   int64 `json:"user_id_to"`
+	UserIDFrom int64 `json:"user_id_from"`
 }
 
 type User struct {
 	ID       int64       `json:"id"`
 	Username pgtype.Text `json:"username"`
 	PhotoUrl pgtype.Text `json:"photo_url"`
-}
-
-type Wish struct {
-	ID          int64       `json:"id"`
-	OwnerID     int64       `json:"owner_id"`
-	ListID      int64       `json:"list_id"`
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
-	Price       string      `json:"price"`
-	Links       []byte      `json:"links"`
-	Reservable  bool        `json:"reservable"`
-	ReservedBy  pgtype.Int8 `json:"reserved_by"`
 }
 
 type Wishlist struct {
@@ -44,7 +32,19 @@ type Wishlist struct {
 	IsPrivate   bool   `json:"is_private"`
 }
 
-type WishlistsAccessList struct {
+type WishlistAccessList struct {
 	ListID int64 `json:"list_id"`
 	UserID int64 `json:"user_id"`
+}
+
+type WishlistItem struct {
+	ID          int64       `json:"id"`
+	OwnerID     int64       `json:"owner_id"`
+	WishlistID  int64       `json:"wishlist_id"`
+	Title       string      `json:"title"`
+	Description string      `json:"description"`
+	Price       string      `json:"price"`
+	Links       []byte      `json:"links"`
+	Reservable  bool        `json:"reservable"`
+	ReservedBy  pgtype.Int8 `json:"reserved_by"`
 }

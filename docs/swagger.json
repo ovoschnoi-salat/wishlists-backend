@@ -18,6 +18,124 @@
     "host": "localhost:8080",
     "basePath": "/api",
     "paths": {
+        "/user/friends": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "returns user's friends list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/service.Friend"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/friends/requests/incoming": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "returns user's incoming friends requests",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/service.Friend"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/friends/requests/{friend_id}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "creates a friend request to another user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Friend ID",
+                        "name": "friend_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/friends/requests/{friend_id}/accept": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "accepts an incoming friend request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Friend ID",
+                        "name": "friend_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/user/wishlists": {
             "get": {
                 "consumes": [
@@ -73,9 +191,104 @@
                     }
                 }
             }
+        },
+        "/user/wishlists/{wishlist_id}/items": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wishlist"
+                ],
+                "summary": "returns wishlist items",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wishlist ID",
+                        "name": "wishlist_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/service.WishlistItem"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wishlist"
+                ],
+                "summary": "creates a wishlist item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wishlist ID",
+                        "name": "wishlist_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "request body",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.CreateWishlistItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.WishlistItem"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "service.CreateWishlistItemRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.WishlistItemLink"
+                    }
+                },
+                "price": {
+                    "type": "string"
+                },
+                "reservable": {
+                    "type": "boolean"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "service.CreateWishlistRequest": {
             "type": "object",
             "properties": {
@@ -86,6 +299,20 @@
                     "type": "boolean"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.Friend": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "photo_url": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -103,6 +330,49 @@
                     "type": "boolean"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.WishlistItem": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.WishlistItemLink"
+                    }
+                },
+                "price": {
+                    "type": "string"
+                },
+                "reservable": {
+                    "type": "boolean"
+                },
+                "reserved_by": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "wishlist_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.WishlistItemLink": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "url": {
                     "type": "string"
                 }
             }

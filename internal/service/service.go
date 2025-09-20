@@ -21,7 +21,12 @@ func NewService(db *store.Queries) *Service {
 func (s *Service) RegisterHandlers(g *gin.RouterGroup) {
 	g.GET("user/wishlists", s.GetMyWishlists)
 	g.POST("user/wishlists", s.CreateWishlist)
+	g.GET("user/wishlists/:wishlist_id/items", s.GetWishlistItems)
+	g.POST("user/wishlists/:wishlist_id/items", s.CreateWishlistItem)
 	g.GET("user/friends", s.GetFriends)
+	g.GET("user/friends/requests/incoming", s.GetIncomingFriendsRequests)
+	g.POST("user/friends/requests/:friend_id/accept", s.AcceptIncomingFriendsRequest)
+	g.POST("user/friends/requests/:friend_id", s.CreateFriendsRequest)
 }
 
 //

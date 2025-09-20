@@ -15,9 +15,7 @@ type Friend struct {
 
 // GetFriends godoc
 // @Summary returns user's friends list
-// @Schemes
-// @Description
-// @Tags user
+// @Tags friends
 // @Accept json
 // @Produce json
 // @Success 200 {array} Friend
@@ -37,20 +35,10 @@ func (s *Service) GetFriends(c *gin.Context) {
 }
 
 func mapStoreUserToFriend(user store.User) Friend {
-	username := ""
-	if user.Username.Valid {
-		username = user.Username.String
-	}
-
-	photoUrl := ""
-	if user.PhotoUrl.Valid {
-		photoUrl = user.PhotoUrl.String
-	}
-
 	return Friend{
 		ID:       user.ID,
-		Username: username,
-		PhotoUrl: photoUrl,
+		Username: user.Username.String,
+		PhotoUrl: user.PhotoUrl.String,
 	}
 }
 

@@ -16,8 +16,6 @@ type Wishlist struct {
 
 // GetMyWishlists godoc
 // @Summary returns user's wishlists
-// @Schemes
-// @Description
 // @Tags user
 // @Accept json
 // @Produce json
