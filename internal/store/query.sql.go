@@ -33,6 +33,26 @@ func (q *Queries) AcceptFriendsRequest(ctx context.Context, arg AcceptFriendsReq
 	return err
 }
 
+const checkIfUserHasAccessToWishlist = `-- name: CheckIfUserHasAccessToWishlist :one
+SELECT id
+FROM wishlists
+WHERE id = $1
+  AND (is_private = false OR
+       id IN (SELECT list_id FROM wishlist_access_list WHERE wishlist_access_list.list_id = $1 AND user_id = $2))
+`
+
+type CheckIfUserHasAccessToWishlistParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) CheckIfUserHasAccessToWishlist(ctx context.Context, arg CheckIfUserHasAccessToWishlistParams) (int64, error) {
+	row := q.db.QueryRow(ctx, checkIfUserHasAccessToWishlist, arg.ID, arg.UserID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const createFriendsRelationship = `-- name: CreateFriendsRelationship :exec
 INSERT INTO friends (user_id, friend_id)
 VALUES ($1, $2),
@@ -61,6 +81,28 @@ type CreateFriendsRequestParams struct {
 
 func (q *Queries) CreateFriendsRequest(ctx context.Context, arg CreateFriendsRequestParams) error {
 	_, err := q.db.Exec(ctx, createFriendsRequest, arg.UserIDFrom, arg.UserIDTo)
+	return err
+}
+
+const createUser = `-- name: CreateUser :exec
+INSERT INTO users (id, username, name, photo_url)
+VALUES ($1, $2, $3, $4)
+`
+
+type CreateUserParams struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Name     string `json:"name"`
+	PhotoUrl string `json:"photo_url"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+	_, err := q.db.Exec(ctx, createUser,
+		arg.ID,
+		arg.Username,
+		arg.Name,
+		arg.PhotoUrl,
+	)
 	return err
 }
 
@@ -170,8 +212,47 @@ func (q *Queries) DeleteWishlistItem(ctx context.Context, arg DeleteWishlistItem
 	return err
 }
 
+const getFriendWishlists = `-- name: GetFriendWishlists :many
+SELECT id, owner_id, title, description, is_private
+FROM wishlists
+WHERE wishlists.owner_id = $1
+  AND (is_private = false OR
+       id IN (SELECT list_id FROM wishlist_access_list WHERE wishlist_access_list.owner_id = $1 AND user_id = $2))
+`
+
+type GetFriendWishlistsParams struct {
+	OwnerID int64 `json:"owner_id"`
+	UserID  int64 `json:"user_id"`
+}
+
+func (q *Queries) GetFriendWishlists(ctx context.Context, arg GetFriendWishlistsParams) ([]Wishlist, error) {
+	rows, err := q.db.Query(ctx, getFriendWishlists, arg.OwnerID, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Wishlist
+	for rows.Next() {
+		var i Wishlist
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.Title,
+			&i.Description,
+			&i.IsPrivate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getFriends = `-- name: GetFriends :many
-SELECT id, username, photo_url
+SELECT id, username, name, photo_url
 FROM users
 WHERE id IN (SELECT friend_id FROM friends WHERE user_id = $1)
 `
@@ -185,7 +266,12 @@ func (q *Queries) GetFriends(ctx context.Context, userID int64) ([]User, error) 
 	var items []User
 	for rows.Next() {
 		var i User
-		if err := rows.Scan(&i.ID, &i.Username, &i.PhotoUrl); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Name,
+			&i.PhotoUrl,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -197,7 +283,7 @@ func (q *Queries) GetFriends(ctx context.Context, userID int64) ([]User, error) 
 }
 
 const getIncomingFriendsRequests = `-- name: GetIncomingFriendsRequests :many
-SELECT id, username, photo_url
+SELECT id, username, name, photo_url
 FROM users
 WHERE id IN (SELECT user_id_from FROM friends_requests WHERE user_id_to = $1)
 `
@@ -211,7 +297,12 @@ func (q *Queries) GetIncomingFriendsRequests(ctx context.Context, userIDTo int64
 	var items []User
 	for rows.Next() {
 		var i User
-		if err := rows.Scan(&i.ID, &i.Username, &i.PhotoUrl); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Name,
+			&i.PhotoUrl,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -220,6 +311,53 @@ func (q *Queries) GetIncomingFriendsRequests(ctx context.Context, userIDTo int64
 		return nil, err
 	}
 	return items, nil
+}
+
+const getUser = `-- name: GetUser :one
+SELECT id, username, name, photo_url
+FROM users
+WHERE id = $1
+`
+
+func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRow(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Name,
+		&i.PhotoUrl,
+	)
+	return i, err
+}
+
+const getWishlistItem = `-- name: GetWishlistItem :one
+SELECT id, owner_id, wishlist_id, title, description, price, links, reservable, reserved_by
+FROM wishlist_items
+WHERE id = $1
+  and owner_id = $2
+`
+
+type GetWishlistItemParams struct {
+	ID      int64 `json:"id"`
+	OwnerID int64 `json:"owner_id"`
+}
+
+func (q *Queries) GetWishlistItem(ctx context.Context, arg GetWishlistItemParams) (WishlistItem, error) {
+	row := q.db.QueryRow(ctx, getWishlistItem, arg.ID, arg.OwnerID)
+	var i WishlistItem
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.WishlistID,
+		&i.Title,
+		&i.Description,
+		&i.Price,
+		&i.Links,
+		&i.Reservable,
+		&i.ReservedBy,
+	)
+	return i, err
 }
 
 const getWishlistItems = `-- name: GetWishlistItems :many

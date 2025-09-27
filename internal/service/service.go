@@ -19,14 +19,20 @@ func NewService(db *store.Queries) *Service {
 }
 
 func (s *Service) RegisterHandlers(g *gin.RouterGroup) {
-	g.GET("user/wishlists", s.GetMyWishlists)
-	g.POST("user/wishlists", s.CreateWishlist)
-	g.GET("user/wishlists/:wishlist_id/items", s.GetWishlistItems)
-	g.POST("user/wishlists/:wishlist_id/items", s.CreateWishlistItem)
-	g.GET("user/friends", s.GetFriends)
-	g.GET("user/friends/requests/incoming", s.GetIncomingFriendsRequests)
-	g.POST("user/friends/requests/:friend_id/accept", s.AcceptIncomingFriendsRequest)
-	g.POST("user/friends/requests/:friend_id", s.CreateFriendsRequest)
+	g.GET("/user/wishlists", s.GetUserWishlists)
+	g.POST("/user/wishlist", s.CreateWishlist)
+
+	g.GET("/user/wishlist/items", s.GetUserWishlistItems)
+	g.POST("/user/wishlist/item", s.CreateUserWishlistItem)
+	g.GET("/user/wishlist/item", s.GetUserWishlistItem)
+
+	g.GET("/user/friends", s.GetFriends)
+	g.GET("/user/friends/requests/incoming", s.GetUserIncomingFriendsRequests)
+	g.POST("/user/friend/request/new", s.CreateUserFriendsRequest)
+	g.POST("/user/friend/request/accept", s.AcceptUserIncomingFriendsRequest)
+
+	g.GET("/user/friend/wishlists", s.GetUserFriendWishlists)
+	g.GET("/user/friend/wishlist/items", s.GetUserFriendWishlistItems)
 }
 
 //

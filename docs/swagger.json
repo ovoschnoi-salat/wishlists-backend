@@ -18,8 +18,166 @@
     "host": "localhost:8080",
     "basePath": "/api",
     "paths": {
+        "/user/friend/request/accept": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "accepts an incoming friend request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Friend ID",
+                        "name": "friend_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/friend/request/new": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "creates a friend request to another user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Friend ID",
+                        "name": "friend_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/friend/wishlist/items": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wishlist"
+                ],
+                "summary": "returns wishlist items",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wishlist ID",
+                        "name": "wishlist_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/service.WishlistItem"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/friend/wishlists": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "returns user's friend wishlists",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Friend ID",
+                        "name": "friend_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/service.FriendWishlist"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/user/friends": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -45,6 +203,11 @@
         },
         "/user/friends/requests/incoming": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -68,99 +231,13 @@
                 }
             }
         },
-        "/user/friends/requests/{friend_id}": {
+        "/user/wishlist": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "creates a friend request to another user",
-                "parameters": [
+                "security": [
                     {
-                        "type": "integer",
-                        "description": "Friend ID",
-                        "name": "friend_id",
-                        "in": "path",
-                        "required": true
+                        "ApiKeyAuth": []
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/user/friends/requests/{friend_id}/accept": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "accepts an incoming friend request",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Friend ID",
-                        "name": "friend_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/user/wishlists": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "returns user's wishlists",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/service.Wishlist"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
                 "consumes": [
                     "application/json"
                 ],
@@ -192,8 +269,13 @@
                 }
             }
         },
-        "/user/wishlists/{wishlist_id}/items": {
+        "/user/wishlist/item": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -203,13 +285,13 @@
                 "tags": [
                     "wishlist"
                 ],
-                "summary": "returns wishlist items",
+                "summary": "returns wishlist item",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Wishlist ID",
-                        "name": "wishlist_id",
-                        "in": "path",
+                        "description": "Wishlist item ID",
+                        "name": "item_id",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -217,15 +299,17 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/service.WishlistItem"
-                            }
+                            "$ref": "#/definitions/service.WishlistItem"
                         }
                     }
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -241,7 +325,7 @@
                         "type": "integer",
                         "description": "Wishlist ID",
                         "name": "wishlist_id",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -259,6 +343,75 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/service.WishlistItem"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/wishlist/items": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wishlist"
+                ],
+                "summary": "returns wishlist items",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wishlist ID",
+                        "name": "wishlist_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/service.WishlistItem"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/wishlists": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "returns user's wishlists",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/service.Wishlist"
+                            }
                         }
                     }
                 }
@@ -309,10 +462,24 @@
                 "id": {
                     "type": "integer"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "photo_url": {
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.FriendWishlist": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "title": {
                     "type": "string"
                 }
             }
@@ -380,50 +547,9 @@
     },
     "securityDefinitions": {
         "ApiKeyAuth": {
-            "description": "Description for what is this security definition being used",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
-        },
-        "BasicAuth": {
-            "type": "basic"
-        },
-        "OAuth2AccessCode": {
-            "type": "oauth2",
-            "flow": "accessCode",
-            "authorizationUrl": "https://example.com/oauth/authorize",
-            "tokenUrl": "https://example.com/oauth/token",
-            "scopes": {
-                "admin": "Grants read and write access to administrative information"
-            }
-        },
-        "OAuth2Application": {
-            "type": "oauth2",
-            "flow": "application",
-            "tokenUrl": "https://example.com/oauth/token",
-            "scopes": {
-                "admin": "Grants read and write access to administrative information",
-                "write": "Grants write access"
-            }
-        },
-        "OAuth2Implicit": {
-            "type": "oauth2",
-            "flow": "implicit",
-            "authorizationUrl": "https://example.com/oauth/authorize",
-            "scopes": {
-                "admin": "Grants read and write access to administrative information",
-                "write": "Grants write access"
-            }
-        },
-        "OAuth2Password": {
-            "type": "oauth2",
-            "flow": "password",
-            "tokenUrl": "https://example.com/oauth/token",
-            "scopes": {
-                "admin": "Grants read and write access to administrative information",
-                "read": "Grants read access",
-                "write": "Grants write access"
-            }
         }
     }
 }

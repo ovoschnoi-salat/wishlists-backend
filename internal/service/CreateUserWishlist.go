@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/internal/middlewares"
 	"backend/internal/store"
 	"net/http"
 
@@ -20,15 +21,22 @@ type CreateWishlistRequest struct {
 // @Accept json
 // @Produce json
 // @Success 200 {object} Wishlist
-// @Router /user/wishlists [post]
+// @Router /user/wishlist [post]
+// @Security ApiKeyAuth
 func (s *Service) CreateWishlist(c *gin.Context) {
+	authData := middlewares.GetInitDataFromContext(c)
+	if authData == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
 	req := new(CreateWishlistRequest)
 	err := c.BindJSON(req)
 	if err != nil {
 		return
 	}
 	wishlist, err := s.db.CreateWishlist(c, store.CreateWishlistParams{
-		OwnerID:     1,
+		OwnerID:     authData.User.ID,
 		Title:       req.Title,
 		Description: req.Description,
 		IsPrivate:   req.IsPrivate,

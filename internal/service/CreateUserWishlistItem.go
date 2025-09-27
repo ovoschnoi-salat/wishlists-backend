@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/internal/middlewares"
 	"backend/internal/store"
 	"encoding/json"
 	"net/http"
@@ -33,22 +34,25 @@ type WishlistItem struct {
 	ReservedBy  *int64             `json:"reserved_by"`
 }
 
-// CreateWishlistItem godoc
+// CreateUserWishlistItem godoc
 // @Summary creates a wishlist item
 // @Tags wishlist
-// @Param wishlist_id path int true "Wishlist ID"
+// @Param wishlist_id query int true "Wishlist ID"
 // @Param item body CreateWishlistItemRequest true "request body"
 // @Accept json
 // @Produce json
 // @Success 200 {object} WishlistItem
-// @Router /user/wishlists/{wishlist_id}/items [post]
-func (s *Service) CreateWishlistItem(c *gin.Context) {
-	// TODO: Extract user ID from authentication context
-	// For now, using hardcoded user ID like in GetMyWishlists
-	ownerID := int64(1)
+// @Router /user/wishlist/item [post]
+// @Security ApiKeyAuth
+func (s *Service) CreateUserWishlistItem(c *gin.Context) {
+	authData := middlewares.GetInitDataFromContext(c)
+	if authData == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
 	// Get wishlist ID from URL parameter
-	wishlistIDStr := c.Param("wishlist_id")
+	wishlistIDStr := c.Query("wishlist_id")
 	wishlistID, err := strconv.ParseInt(wishlistIDStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid wishlist ID"})
@@ -73,7 +77,7 @@ func (s *Service) CreateWishlistItem(c *gin.Context) {
 	// Create the wishlist item
 	item, err := s.db.CreateWishlistItem(c, store.CreateWishlistItemParams{
 		WishlistID:  wishlistID,
-		OwnerID:     ownerID,
+		OwnerID:     authData.User.ID,
 		Title:       req.Title,
 		Description: req.Description,
 		Price:       req.Price,

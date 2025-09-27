@@ -4,8 +4,9 @@
 CREATE TABLE IF NOT EXISTS users
 (
     id        BIGINT PRIMARY KEY,
-    username  TEXT,
-    photo_url TEXT
+    username  TEXT NOT NULL,
+    name      TEXT NOT NULL,
+    photo_url TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS friends
@@ -24,7 +25,7 @@ CREATE TABLE IF NOT EXISTS friends_requests
     PRIMARY KEY (user_id_to, user_id_from)
 );
 
-CREATE INDEX IF NOT EXISTS friends_requests_user_id_to_idx ON friends_requests (user_id_to);
+CREATE INDEX IF NOT EXISTS friends_requests_user_id_from_idx ON friends_requests (user_id_from);
 
 CREATE TABLE IF NOT EXISTS wishlists
 (
@@ -39,9 +40,12 @@ CREATE TABLE IF NOT EXISTS wishlist_access_list
 (
     list_id BIGINT NOT NULL REFERENCES wishlists (id),
     user_id BIGINT NOT NULL REFERENCES users (id),
+    owner_id BIGINT NOT NULL REFERENCES users (id),
 
     PRIMARY KEY (list_id, user_id)
 );
+
+CREATE INDEX IF NOT EXISTS wishlist_access_list_owner_id_user_id_idx ON wishlist_access_list (owner_id, user_id);
 
 CREATE TABLE IF NOT EXISTS wishlist_items
 (

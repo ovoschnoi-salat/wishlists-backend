@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/internal/middlewares"
 	"backend/internal/store"
 	"net/http"
 
@@ -10,6 +11,7 @@ import (
 type Friend struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
+	Name     string `json:"name"`
 	PhotoUrl string `json:"photo_url"`
 }
 
@@ -20,12 +22,15 @@ type Friend struct {
 // @Produce json
 // @Success 200 {array} Friend
 // @Router /user/friends [get]
+// @Security ApiKeyAuth
 func (s *Service) GetFriends(c *gin.Context) {
-	// TODO: Extract user ID from authentication context
-	// For now, using hardcoded user ID like in GetMyWishlists
-	userID := int64(1)
+	authData := middlewares.GetInitDataFromContext(c)
+	if authData == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
-	friends, err := s.db.GetFriends(c, userID)
+	friends, err := s.db.GetFriends(c, authData.User.ID)
 	if err != nil {
 		c.Error(err)
 		c.Status(http.StatusInternalServerError)
@@ -37,8 +42,9 @@ func (s *Service) GetFriends(c *gin.Context) {
 func mapStoreUserToFriend(user store.User) Friend {
 	return Friend{
 		ID:       user.ID,
-		Username: user.Username.String,
-		PhotoUrl: user.PhotoUrl.String,
+		Username: user.Username,
+		Name:     user.Name,
+		PhotoUrl: user.PhotoUrl,
 	}
 }
 

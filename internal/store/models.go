@@ -19,9 +19,10 @@ type FriendsRequest struct {
 }
 
 type User struct {
-	ID       int64       `json:"id"`
-	Username pgtype.Text `json:"username"`
-	PhotoUrl pgtype.Text `json:"photo_url"`
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Name     string `json:"name"`
+	PhotoUrl string `json:"photo_url"`
 }
 
 type Wishlist struct {
@@ -33,8 +34,9 @@ type Wishlist struct {
 }
 
 type WishlistAccessList struct {
-	ListID int64 `json:"list_id"`
-	UserID int64 `json:"user_id"`
+	ListID  int64 `json:"list_id"`
+	UserID  int64 `json:"user_id"`
+	OwnerID int64 `json:"owner_id"`
 }
 
 type WishlistItem struct {

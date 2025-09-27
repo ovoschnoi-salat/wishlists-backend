@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/internal/middlewares"
 	"backend/internal/store"
 	"net/http"
 	"strconv"
@@ -8,18 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AcceptIncomingFriendsRequest godoc
+// AcceptUserIncomingFriendsRequest godoc
 // @Summary accepts an incoming friend request
 // @Tags friends
 // @Accept json
 // @Produce json
-// @Param friend_id path int true "Friend ID"
+// @Param friend_id query int true "Friend ID"
 // @Success 200 {object} map[string]string
-// @Router /user/friends/requests/{friend_id}/accept [post]
-func (s *Service) AcceptIncomingFriendsRequest(c *gin.Context) {
-	// TODO: Extract user ID from authentication context
-	// For now, using hardcoded user ID like in GetMyWishlists
-	userIDTo := int64(1)
+// @Router /user/friend/request/accept [post]
+// @Security ApiKeyAuth
+func (s *Service) AcceptUserIncomingFriendsRequest(c *gin.Context) {
+	authData := middlewares.GetInitDataFromContext(c)
+	if authData == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
 	// Get friend ID from URL parameter
 	friendIDStr := c.Param("friend_id")
@@ -32,7 +36,7 @@ func (s *Service) AcceptIncomingFriendsRequest(c *gin.Context) {
 	// Accept the friend request
 	err = s.db.AcceptFriendsRequest(c, store.AcceptFriendsRequestParams{
 		UserIDFrom: friendID,
-		UserIDTo:   userIDTo,
+		UserIDTo:   authData.User.ID,
 	})
 	if err != nil {
 		c.Error(err)

@@ -1,3 +1,12 @@
+-- name: GetUser :one
+SELECT *
+FROM users
+WHERE id = $1;
+
+-- name: CreateUser :exec
+INSERT INTO users (id, username, name, photo_url)
+VALUES ($1, $2, $3, $4);
+
 -- name: GetWishlists :many
 SELECT *
 FROM wishlists
@@ -60,6 +69,12 @@ FROM wishlist_items
 WHERE wishlist_id = $1
   and owner_id = $2;
 
+-- name: GetWishlistItem :one
+SELECT *
+FROM wishlist_items
+WHERE id = $1
+  and owner_id = $2;
+
 -- name: CreateWishlistItem :one
 INSERT INTO wishlist_items (wishlist_id, owner_id, title, description, price, links, reservable)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -81,3 +96,18 @@ DELETE
 FROM wishlist_items
 WHERE id = $1
   and owner_id = $2;
+
+
+-- name: GetFriendWishlists :many
+SELECT *
+FROM wishlists
+WHERE wishlists.owner_id = $1
+  AND (is_private = false OR
+       id IN (SELECT list_id FROM wishlist_access_list WHERE wishlist_access_list.owner_id = $1 AND user_id = $2));
+
+-- name: CheckIfUserHasAccessToWishlist :one
+SELECT id
+FROM wishlists
+WHERE id = $1
+  AND (is_private = false OR
+       id IN (SELECT list_id FROM wishlist_access_list WHERE wishlist_access_list.list_id = $1 AND user_id = $2));

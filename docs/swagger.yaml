@@ -28,9 +28,18 @@ definitions:
     properties:
       id:
         type: integer
+      name:
+        type: string
       photo_url:
         type: string
       username:
+        type: string
+    type: object
+  service.FriendWishlist:
+    properties:
+      id:
+        type: integer
+      title:
         type: string
     type: object
   service.Wishlist:
@@ -86,6 +95,100 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /user/friend/request/accept:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Friend ID
+        in: query
+        name: friend_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: accepts an incoming friend request
+      tags:
+      - friends
+  /user/friend/request/new:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Friend ID
+        in: query
+        name: friend_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: creates a friend request to another user
+      tags:
+      - friends
+  /user/friend/wishlist/items:
+    get:
+      parameters:
+      - description: Wishlist ID
+        in: query
+        name: wishlist_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/service.WishlistItem'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: returns wishlist items
+      tags:
+      - wishlist
+  /user/friend/wishlists:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Friend ID
+        in: query
+        name: friend_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/service.FriendWishlist'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: returns user's friend wishlists
+      tags:
+      - friends
   /user/friends:
     get:
       consumes:
@@ -99,51 +202,9 @@ paths:
             items:
               $ref: '#/definitions/service.Friend'
             type: array
+      security:
+      - ApiKeyAuth: []
       summary: returns user's friends list
-      tags:
-      - friends
-  /user/friends/requests/{friend_id}:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Friend ID
-        in: path
-        name: friend_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: creates a friend request to another user
-      tags:
-      - friends
-  /user/friends/requests/{friend_id}/accept:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Friend ID
-        in: path
-        name: friend_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: accepts an incoming friend request
       tags:
       - friends
   /user/friends/requests/incoming:
@@ -159,25 +220,12 @@ paths:
             items:
               $ref: '#/definitions/service.Friend'
             type: array
+      security:
+      - ApiKeyAuth: []
       summary: returns user's incoming friends requests
       tags:
       - friends
-  /user/wishlists:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/service.Wishlist'
-            type: array
-      summary: returns user's wishlists
-      tags:
-      - user
+  /user/wishlist:
     post:
       consumes:
       - application/json
@@ -195,17 +243,19 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/service.Wishlist'
+      security:
+      - ApiKeyAuth: []
       summary: creates wishlist
       tags:
       - user
-  /user/wishlists/{wishlist_id}/items:
+  /user/wishlist/item:
     get:
       consumes:
       - application/json
       parameters:
-      - description: Wishlist ID
-        in: path
-        name: wishlist_id
+      - description: Wishlist item ID
+        in: query
+        name: item_id
         required: true
         type: integer
       produces:
@@ -214,10 +264,10 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/service.WishlistItem'
-            type: array
-      summary: returns wishlist items
+            $ref: '#/definitions/service.WishlistItem'
+      security:
+      - ApiKeyAuth: []
+      summary: returns wishlist item
       tags:
       - wishlist
     post:
@@ -225,7 +275,7 @@ paths:
       - application/json
       parameters:
       - description: Wishlist ID
-        in: path
+        in: query
         name: wishlist_id
         required: true
         type: integer
@@ -242,44 +292,56 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/service.WishlistItem'
+      security:
+      - ApiKeyAuth: []
       summary: creates a wishlist item
       tags:
       - wishlist
+  /user/wishlist/items:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Wishlist ID
+        in: query
+        name: wishlist_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/service.WishlistItem'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: returns wishlist items
+      tags:
+      - wishlist
+  /user/wishlists:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/service.Wishlist'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: returns user's wishlists
+      tags:
+      - user
 securityDefinitions:
   ApiKeyAuth:
-    description: Description for what is this security definition being used
     in: header
     name: Authorization
     type: apiKey
-  BasicAuth:
-    type: basic
-  OAuth2AccessCode:
-    authorizationUrl: https://example.com/oauth/authorize
-    flow: accessCode
-    scopes:
-      admin: Grants read and write access to administrative information
-    tokenUrl: https://example.com/oauth/token
-    type: oauth2
-  OAuth2Application:
-    flow: application
-    scopes:
-      admin: Grants read and write access to administrative information
-      write: Grants write access
-    tokenUrl: https://example.com/oauth/token
-    type: oauth2
-  OAuth2Implicit:
-    authorizationUrl: https://example.com/oauth/authorize
-    flow: implicit
-    scopes:
-      admin: Grants read and write access to administrative information
-      write: Grants write access
-    type: oauth2
-  OAuth2Password:
-    flow: password
-    scopes:
-      admin: Grants read and write access to administrative information
-      read: Grants read access
-      write: Grants write access
-    tokenUrl: https://example.com/oauth/token
-    type: oauth2
 swagger: "2.0"

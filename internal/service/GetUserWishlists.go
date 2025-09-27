@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/internal/middlewares"
 	"backend/internal/store"
 	"net/http"
 
@@ -14,15 +15,22 @@ type Wishlist struct {
 	IsPrivate   bool   `json:"is_private"`
 }
 
-// GetMyWishlists godoc
+// GetUserWishlists godoc
 // @Summary returns user's wishlists
 // @Tags user
 // @Accept json
 // @Produce json
 // @Success 200 {array} Wishlist
 // @Router /user/wishlists [get]
-func (s *Service) GetMyWishlists(c *gin.Context) {
-	wishlists, err := s.db.GetWishlists(c, 1)
+// @Security ApiKeyAuth
+func (s *Service) GetUserWishlists(c *gin.Context) {
+	authData := middlewares.GetInitDataFromContext(c)
+	if authData == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	wishlists, err := s.db.GetWishlists(c, authData.User.ID)
 	if err != nil {
 		c.Error(err)
 		c.Status(http.StatusInternalServerError)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/internal/middlewares"
 	"backend/internal/service"
 	"backend/internal/store"
 	"context"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	_ "backend/docs"
 
@@ -35,33 +37,9 @@ import (
 //	@host		localhost:8080
 //	@BasePath	/api
 
-//	@securityDefinitions.basic	BasicAuth
-
 //	@securityDefinitions.apikey	ApiKeyAuth
-//	@in							header
-//	@name						Authorization
-//	@description				Description for what is this security definition being used
-
-//	@securitydefinitions.oauth2.application	OAuth2Application
-//	@tokenUrl								https://example.com/oauth/token
-//	@scope.write							Grants write access
-//	@scope.admin							Grants read and write access to administrative information
-
-//	@securitydefinitions.oauth2.implicit	OAuth2Implicit
-//	@authorizationUrl						https://example.com/oauth/authorize
-//	@scope.write							Grants write access
-//	@scope.admin							Grants read and write access to administrative information
-
-//	@securitydefinitions.oauth2.password	OAuth2Password
-//	@tokenUrl								https://example.com/oauth/token
-//	@scope.read								Grants read access
-//	@scope.write							Grants write access
-//	@scope.admin							Grants read and write access to administrative information
-
-//	@securitydefinitions.oauth2.accessCode	OAuth2AccessCode
-//	@tokenUrl								https://example.com/oauth/token
-//	@authorizationUrl						https://example.com/oauth/authorize
-//	@scope.admin							Grants read and write access to administrative information
+//	@in			header
+//	@name		Authorization
 
 func main() {
 	ctx := context.Background()
@@ -84,11 +62,18 @@ func main() {
 
 	router := gin.Default()
 
-	router.Use(cors.Default()) // All origins allowed by default
+	router.Use(cors.New(cors.Config{
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
+		AllowAllOrigins:  true,
+	})) // All origins allowed by default
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	g := router.Group("/api")
+	g.Use(middlewares.NewTgAuthMiddleware("", storeObj))
 	serviceObj.RegisterHandlers(g)
 
 	log.Printf("server listening at :%s", port)
