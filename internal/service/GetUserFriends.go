@@ -17,12 +17,11 @@ type Friend struct {
 
 // GetFriends godoc
 // @Summary returns user's friends list
-// @Tags friends
-// @Accept json
+// @Tags Friends
+// @Router /api/user/friends [get]
+// @Security ApiKeyAuth
 // @Produce json
 // @Success 200 {array} Friend
-// @Router /user/friends [get]
-// @Security ApiKeyAuth
 func (s *Service) GetFriends(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {

@@ -16,13 +16,12 @@ type FriendWishlist struct {
 
 // GetUserFriendWishlists godoc
 // @Summary returns user's friend wishlists
-// @Tags friends
+// @Tags Friends
+// @Router /api/user/friend/wishlists [get]
+// @Security ApiKeyAuth
 // @Param friend_id query int true "Friend ID"
-// @Accept json
 // @Produce json
 // @Success 200 {array} FriendWishlist
-// @Router /user/friend/wishlists [get]
-// @Security ApiKeyAuth
 func (s *Service) GetUserFriendWishlists(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {

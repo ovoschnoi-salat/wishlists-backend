@@ -1,4 +1,3 @@
-basePath: /api
 definitions:
   service.CreateWishlistItemRequest:
     properties:
@@ -83,22 +82,13 @@ definitions:
     type: object
 host: localhost:8080
 info:
-  contact:
-    email: support@swagger.io
-    name: API Support
-    url: http://www.swagger.io/support
-  description: This is a sample server celler server.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
-  title: Swagger Example API
+  contact: {}
+  description: Backend service for wishlists app
+  title: Wishlists backend API
   version: "1.0"
 paths:
-  /user/friend/request/accept:
+  /api/user/friend/request/accept:
     post:
-      consumes:
-      - application/json
       parameters:
       - description: Friend ID
         in: query
@@ -118,17 +108,15 @@ paths:
       - ApiKeyAuth: []
       summary: accepts an incoming friend request
       tags:
-      - friends
-  /user/friend/request/new:
+      - Friends
+  /api/user/friend/request/new:
     post:
-      consumes:
-      - application/json
       parameters:
-      - description: Friend ID
+      - description: Friend username
         in: query
-        name: friend_id
+        name: username
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -142,8 +130,8 @@ paths:
       - ApiKeyAuth: []
       summary: creates a friend request to another user
       tags:
-      - friends
-  /user/friend/wishlist/items:
+      - Friends
+  /api/user/friend/wishlist/items:
     get:
       parameters:
       - description: Wishlist ID
@@ -164,11 +152,9 @@ paths:
       - ApiKeyAuth: []
       summary: returns wishlist items
       tags:
-      - wishlist
-  /user/friend/wishlists:
+      - Friends
+  /api/user/friend/wishlists:
     get:
-      consumes:
-      - application/json
       parameters:
       - description: Friend ID
         in: query
@@ -188,11 +174,9 @@ paths:
       - ApiKeyAuth: []
       summary: returns user's friend wishlists
       tags:
-      - friends
-  /user/friends:
+      - Friends
+  /api/user/friends:
     get:
-      consumes:
-      - application/json
       produces:
       - application/json
       responses:
@@ -206,11 +190,9 @@ paths:
       - ApiKeyAuth: []
       summary: returns user's friends list
       tags:
-      - friends
-  /user/friends/requests/incoming:
+      - Friends
+  /api/user/friends/requests/incoming:
     get:
-      consumes:
-      - application/json
       produces:
       - application/json
       responses:
@@ -224,8 +206,8 @@ paths:
       - ApiKeyAuth: []
       summary: returns user's incoming friends requests
       tags:
-      - friends
-  /user/wishlist:
+      - Friends
+  /api/user/wishlist:
     post:
       consumes:
       - application/json
@@ -247,11 +229,9 @@ paths:
       - ApiKeyAuth: []
       summary: creates wishlist
       tags:
-      - user
-  /user/wishlist/item:
+      - User
+  /api/user/wishlist/item:
     get:
-      consumes:
-      - application/json
       parameters:
       - description: Wishlist item ID
         in: query
@@ -269,7 +249,7 @@ paths:
       - ApiKeyAuth: []
       summary: returns wishlist item
       tags:
-      - wishlist
+      - User
     post:
       consumes:
       - application/json
@@ -296,11 +276,9 @@ paths:
       - ApiKeyAuth: []
       summary: creates a wishlist item
       tags:
-      - wishlist
-  /user/wishlist/items:
+      - User
+  /api/user/wishlist/items:
     get:
-      consumes:
-      - application/json
       parameters:
       - description: Wishlist ID
         in: query
@@ -320,11 +298,9 @@ paths:
       - ApiKeyAuth: []
       summary: returns wishlist items
       tags:
-      - wishlist
-  /user/wishlists:
+      - User
+  /api/user/wishlists:
     get:
-      consumes:
-      - application/json
       produces:
       - application/json
       responses:
@@ -338,7 +314,7 @@ paths:
       - ApiKeyAuth: []
       summary: returns user's wishlists
       tags:
-      - user
+      - User
 securityDefinitions:
   ApiKeyAuth:
     in: header

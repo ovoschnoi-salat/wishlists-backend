@@ -11,13 +11,12 @@ import (
 
 // CreateUserFriendsRequest godoc
 // @Summary creates a friend request to another user
-// @Tags friends
-// @Accept json
-// @Produce json
-// @Param friend_id query int true "Friend ID"
-// @Success 200 {object} map[string]string
-// @Router /user/friend/request/new [post]
+// @Tags Friends
+// @Router /api/user/friend/request/new [post]
 // @Security ApiKeyAuth
+// @Param username query string true "Friend username"
+// @Produce json
+// @Success 200 {object} map[string]string
 func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {
@@ -25,24 +24,21 @@ func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 		return
 	}
 
-	// Get friend ID from URL parameter
-	friendIDStr := c.Query("friend_id")
-	friendID, err := strconv.ParseInt(friendIDStr, 10, 64)
+	friendUsernameStr := c.Query("username")
+	friendUsername, err := strconv.ParseInt(friendUsernameStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid friend ID"})
 		return
 	}
 
-	// Check if trying to send request to self
-	if authData.User.ID == friendID {
+	if authData.User.ID == friendUsername {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send friend request to yourself"})
 		return
 	}
 
-	// Create the friend request
 	err = s.db.CreateFriendsRequest(c, store.CreateFriendsRequestParams{
 		UserIDFrom: authData.User.ID,
-		UserIDTo:   friendID,
+		UserIDTo:   friendUsername,
 	})
 	if err != nil {
 		c.Error(err)

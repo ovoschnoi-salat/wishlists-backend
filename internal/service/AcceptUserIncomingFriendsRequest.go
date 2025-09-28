@@ -11,13 +11,12 @@ import (
 
 // AcceptUserIncomingFriendsRequest godoc
 // @Summary accepts an incoming friend request
-// @Tags friends
-// @Accept json
-// @Produce json
-// @Param friend_id query int true "Friend ID"
-// @Success 200 {object} map[string]string
-// @Router /user/friend/request/accept [post]
+// @Tags Friends
+// @Router /api/user/friend/request/accept [post]
 // @Security ApiKeyAuth
+// @Param friend_id query int true "Friend ID"
+// @Produce json
+// @Success 200 {object} map[string]string
 func (s *Service) AcceptUserIncomingFriendsRequest(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {

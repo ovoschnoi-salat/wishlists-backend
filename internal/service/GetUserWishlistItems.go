@@ -11,13 +11,12 @@ import (
 
 // GetUserWishlistItems godoc
 // @Summary returns wishlist items
-// @Tags wishlist
+// @Tags User
+// @Router /api/user/wishlist/items [get]
+// @Security ApiKeyAuth
 // @Param wishlist_id query int true "Wishlist ID"
-// @Accept json
 // @Produce json
 // @Success 200 {array} WishlistItem
-// @Router /user/wishlist/items [get]
-// @Security ApiKeyAuth
 func (s *Service) GetUserWishlistItems(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {

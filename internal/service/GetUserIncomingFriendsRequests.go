@@ -9,12 +9,11 @@ import (
 
 // GetUserIncomingFriendsRequests godoc
 // @Summary returns user's incoming friends requests
-// @Tags friends
-// @Accept json
+// @Tags Friends
+// @Router /api/user/friends/requests/incoming [get]
+// @Security ApiKeyAuth
 // @Produce json
 // @Success 200 {array} Friend
-// @Router /user/friends/requests/incoming [get]
-// @Security ApiKeyAuth
 func (s *Service) GetUserIncomingFriendsRequests(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {

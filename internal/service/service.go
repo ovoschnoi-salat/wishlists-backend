@@ -19,6 +19,7 @@ func NewService(db *store.Queries) *Service {
 }
 
 func (s *Service) RegisterHandlers(g *gin.RouterGroup) {
+	g = g.Group("/api")
 	g.GET("/user/wishlists", s.GetUserWishlists)
 	g.POST("/user/wishlist", s.CreateWishlist)
 

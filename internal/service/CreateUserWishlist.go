@@ -16,13 +16,13 @@ type CreateWishlistRequest struct {
 
 // CreateWishlist godoc
 // @Summary creates wishlist
-// @Tags user
-// @Param			wishlist	body		CreateWishlistRequest	true "request body"
-// @Accept json
-// @Produce json
-// @Success 200 {object} Wishlist
-// @Router /user/wishlist [post]
+// @Tags User
+// @Router /api/user/wishlist [post]
 // @Security ApiKeyAuth
+// @Accept	json
+// @Param	wishlist	body	CreateWishlistRequest	true	"request body"
+// @Produce	json
+// @Success 200 {object} Wishlist
 func (s *Service) CreateWishlist(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {

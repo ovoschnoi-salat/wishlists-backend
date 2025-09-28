@@ -1,38 +1,25 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is a sample server celler server.",
-        "title": "Swagger Example API",
-        "termsOfService": "http://swagger.io/terms/",
-        "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
+        "description": "Backend service for wishlists app",
+        "title": "Wishlists backend API",
+        "contact": {},
         "version": "1.0"
     },
     "host": "localhost:8080",
-    "basePath": "/api",
     "paths": {
-        "/user/friend/request/accept": {
+        "/api/user/friend/request/accept": {
             "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "friends"
+                    "Friends"
                 ],
                 "summary": "accepts an incoming friend request",
                 "parameters": [
@@ -57,28 +44,25 @@
                 }
             }
         },
-        "/user/friend/request/new": {
+        "/api/user/friend/request/new": {
             "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "friends"
+                    "Friends"
                 ],
                 "summary": "creates a friend request to another user",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Friend ID",
-                        "name": "friend_id",
+                        "type": "string",
+                        "description": "Friend username",
+                        "name": "username",
                         "in": "query",
                         "required": true
                     }
@@ -96,7 +80,7 @@
                 }
             }
         },
-        "/user/friend/wishlist/items": {
+        "/api/user/friend/wishlist/items": {
             "get": {
                 "security": [
                     {
@@ -107,7 +91,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "wishlist"
+                    "Friends"
                 ],
                 "summary": "returns wishlist items",
                 "parameters": [
@@ -132,21 +116,18 @@
                 }
             }
         },
-        "/user/friend/wishlists": {
+        "/api/user/friend/wishlists": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "friends"
+                    "Friends"
                 ],
                 "summary": "returns user's friend wishlists",
                 "parameters": [
@@ -171,21 +152,18 @@
                 }
             }
         },
-        "/user/friends": {
+        "/api/user/friends": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "friends"
+                    "Friends"
                 ],
                 "summary": "returns user's friends list",
                 "responses": {
@@ -201,21 +179,18 @@
                 }
             }
         },
-        "/user/friends/requests/incoming": {
+        "/api/user/friends/requests/incoming": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "friends"
+                    "Friends"
                 ],
                 "summary": "returns user's incoming friends requests",
                 "responses": {
@@ -231,7 +206,7 @@
                 }
             }
         },
-        "/user/wishlist": {
+        "/api/user/wishlist": {
             "post": {
                 "security": [
                     {
@@ -245,7 +220,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "User"
                 ],
                 "summary": "creates wishlist",
                 "parameters": [
@@ -269,21 +244,18 @@
                 }
             }
         },
-        "/user/wishlist/item": {
+        "/api/user/wishlist/item": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "wishlist"
+                    "User"
                 ],
                 "summary": "returns wishlist item",
                 "parameters": [
@@ -317,7 +289,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "wishlist"
+                    "User"
                 ],
                 "summary": "creates a wishlist item",
                 "parameters": [
@@ -348,21 +320,18 @@
                 }
             }
         },
-        "/user/wishlist/items": {
+        "/api/user/wishlist/items": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "wishlist"
+                    "User"
                 ],
                 "summary": "returns wishlist items",
                 "parameters": [
@@ -387,21 +356,18 @@
                 }
             }
         },
-        "/user/wishlists": {
+        "/api/user/wishlists": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "User"
                 ],
                 "summary": "returns user's wishlists",
                 "responses": {

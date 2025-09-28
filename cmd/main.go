@@ -22,20 +22,11 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-//	@title			Swagger Example API
+//	@title			Wishlists backend API
 //	@version		1.0
-//	@description	This is a sample server celler server.
-//	@termsOfService	http://swagger.io/terms/
-
-//	@contact.name	API Support
-//	@contact.url	http://www.swagger.io/support
-//	@contact.email	support@swagger.io
-
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+//	@description	Backend service for wishlists app
 
 //	@host		localhost:8080
-//	@BasePath	/api
 
 //	@securityDefinitions.apikey	ApiKeyAuth
 //	@in			header
@@ -72,9 +63,7 @@ func main() {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	g := router.Group("/api")
-	g.Use(middlewares.NewTgAuthMiddleware("", storeObj))
-	serviceObj.RegisterHandlers(g)
+	serviceObj.RegisterHandlers(router.Group("", middlewares.NewTgAuthMiddleware("", storeObj)))
 
 	log.Printf("server listening at :%s", port)
 	err = http.ListenAndServe(":"+port, router)

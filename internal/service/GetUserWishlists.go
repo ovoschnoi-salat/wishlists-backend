@@ -17,12 +17,11 @@ type Wishlist struct {
 
 // GetUserWishlists godoc
 // @Summary returns user's wishlists
-// @Tags user
-// @Accept json
+// @Tags User
+// @Router /api/user/wishlists [get]
+// @Security ApiKeyAuth
 // @Produce json
 // @Success 200 {array} Wishlist
-// @Router /user/wishlists [get]
-// @Security ApiKeyAuth
 func (s *Service) GetUserWishlists(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {

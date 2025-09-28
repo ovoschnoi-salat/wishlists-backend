@@ -9,36 +9,24 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
-        "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/user/friend/request/accept": {
+        "/api/user/friend/request/accept": {
             "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "friends"
+                    "Friends"
                 ],
                 "summary": "accepts an incoming friend request",
                 "parameters": [
@@ -63,28 +51,25 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/friend/request/new": {
+        "/api/user/friend/request/new": {
             "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "friends"
+                    "Friends"
                 ],
                 "summary": "creates a friend request to another user",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Friend ID",
-                        "name": "friend_id",
+                        "type": "string",
+                        "description": "Friend username",
+                        "name": "username",
                         "in": "query",
                         "required": true
                     }
@@ -102,7 +87,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/friend/wishlist/items": {
+        "/api/user/friend/wishlist/items": {
             "get": {
                 "security": [
                     {
@@ -113,7 +98,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "wishlist"
+                    "Friends"
                 ],
                 "summary": "returns wishlist items",
                 "parameters": [
@@ -138,21 +123,18 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/friend/wishlists": {
+        "/api/user/friend/wishlists": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "friends"
+                    "Friends"
                 ],
                 "summary": "returns user's friend wishlists",
                 "parameters": [
@@ -177,21 +159,18 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/friends": {
+        "/api/user/friends": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "friends"
+                    "Friends"
                 ],
                 "summary": "returns user's friends list",
                 "responses": {
@@ -207,21 +186,18 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/friends/requests/incoming": {
+        "/api/user/friends/requests/incoming": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "friends"
+                    "Friends"
                 ],
                 "summary": "returns user's incoming friends requests",
                 "responses": {
@@ -237,7 +213,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/wishlist": {
+        "/api/user/wishlist": {
             "post": {
                 "security": [
                     {
@@ -251,7 +227,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "User"
                 ],
                 "summary": "creates wishlist",
                 "parameters": [
@@ -275,21 +251,18 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/wishlist/item": {
+        "/api/user/wishlist/item": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "wishlist"
+                    "User"
                 ],
                 "summary": "returns wishlist item",
                 "parameters": [
@@ -323,7 +296,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "wishlist"
+                    "User"
                 ],
                 "summary": "creates a wishlist item",
                 "parameters": [
@@ -354,21 +327,18 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/wishlist/items": {
+        "/api/user/wishlist/items": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "wishlist"
+                    "User"
                 ],
                 "summary": "returns wishlist items",
                 "parameters": [
@@ -393,21 +363,18 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/wishlists": {
+        "/api/user/wishlists": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "User"
                 ],
                 "summary": "returns user's wishlists",
                 "responses": {
@@ -564,10 +531,10 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Swagger Example API",
-	Description:      "This is a sample server celler server.",
+	Title:            "Wishlists backend API",
+	Description:      "Backend service for wishlists app",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
