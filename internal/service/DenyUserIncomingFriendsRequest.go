@@ -9,14 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AcceptUserIncomingFriendsRequest godoc
+// DenyUserIncomingFriendsRequest godoc
 // @Summary accepts an incoming friend request
 // @Tags Friends
-// @Router /api/user/friend/request/accept [post]
+// @Router /api/user/friend/request/deny [post]
 // @Security ApiKeyAuth
 // @Param friend_id query int true "Friend ID"
 // @Success 204
-func (s *Service) AcceptUserIncomingFriendsRequest(c *gin.Context) {
+func (s *Service) DenyUserIncomingFriendsRequest(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -32,7 +32,7 @@ func (s *Service) AcceptUserIncomingFriendsRequest(c *gin.Context) {
 	}
 
 	// Accept the friend request
-	err = s.db.AcceptFriendsRequest(c, store.AcceptFriendsRequestParams{
+	err = s.db.DenyFriendsRequest(c, store.DenyFriendsRequestParams{
 		UserIDFrom: friendID,
 		UserIDTo:   authData.User.ID,
 	})

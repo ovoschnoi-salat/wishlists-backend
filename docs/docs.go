@@ -22,8 +22,32 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "produces": [
-                    "application/json"
+                "tags": [
+                    "Friends"
+                ],
+                "summary": "accepts an incoming friend request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Friend ID",
+                        "name": "friend_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/user/friend/request/deny": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
                 ],
                 "tags": [
                     "Friends"
@@ -39,14 +63,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }
@@ -213,6 +231,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/friends/requests/incoming/count": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Friends"
+                ],
+                "summary": "returns user's incoming friends requests count",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.IncomingFriendsRequestsCountResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/wishlist": {
             "post": {
                 "security": [
@@ -300,13 +342,6 @@ const docTemplate = `{
                 ],
                 "summary": "creates a wishlist item",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Wishlist ID",
-                        "name": "wishlist_id",
-                        "in": "query",
-                        "required": true
-                    },
                     {
                         "description": "request body",
                         "name": "item",
@@ -412,6 +447,9 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
+                },
+                "wishlist_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -457,6 +495,14 @@ const docTemplate = `{
                 }
             }
         },
+        "service.IncomingFriendsRequestsCountResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                }
+            }
+        },
         "service.Wishlist": {
             "type": "object",
             "properties": {
@@ -495,8 +541,8 @@ const docTemplate = `{
                 "reservable": {
                     "type": "boolean"
                 },
-                "reserved_by": {
-                    "type": "integer"
+                "reserved": {
+                    "type": "boolean"
                 },
                 "title": {
                     "type": "string"

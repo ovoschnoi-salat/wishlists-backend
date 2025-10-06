@@ -29,8 +29,10 @@ func (s *Service) RegisterHandlers(g *gin.RouterGroup) {
 
 	g.GET("/user/friends", s.GetFriends)
 	g.GET("/user/friends/requests/incoming", s.GetUserIncomingFriendsRequests)
+	g.GET("/user/friends/requests/incoming/count", s.GetUserIncomingFriendsRequestsCount)
 	g.POST("/user/friend/request/new", s.CreateUserFriendsRequest)
 	g.POST("/user/friend/request/accept", s.AcceptUserIncomingFriendsRequest)
+	g.POST("/user/friend/request/deny", s.DenyUserIncomingFriendsRequest)
 
 	g.GET("/user/friend/wishlists", s.GetUserFriendWishlists)
 	g.GET("/user/friend/wishlist/items", s.GetUserFriendWishlistItems)

@@ -13,6 +13,8 @@ definitions:
         type: boolean
       title:
         type: string
+      wishlist_id:
+        type: integer
     type: object
   service.CreateWishlistRequest:
     properties:
@@ -41,6 +43,11 @@ definitions:
       title:
         type: string
     type: object
+  service.IncomingFriendsRequestsCountResponse:
+    properties:
+      count:
+        type: integer
+    type: object
   service.Wishlist:
     properties:
       description:
@@ -66,8 +73,8 @@ definitions:
         type: string
       reservable:
         type: boolean
-      reserved_by:
-        type: integer
+      reserved:
+        type: boolean
       title:
         type: string
       wishlist_id:
@@ -95,15 +102,25 @@ paths:
         name: friend_id
         required: true
         type: integer
-      produces:
-      - application/json
       responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: accepts an incoming friend request
+      tags:
+      - Friends
+  /api/user/friend/request/deny:
+    post:
+      parameters:
+      - description: Friend ID
+        in: query
+        name: friend_id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
       security:
       - ApiKeyAuth: []
       summary: accepts an incoming friend request
@@ -207,6 +224,20 @@ paths:
       summary: returns user's incoming friends requests
       tags:
       - Friends
+  /api/user/friends/requests/incoming/count:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.IncomingFriendsRequestsCountResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: returns user's incoming friends requests count
+      tags:
+      - Friends
   /api/user/wishlist:
     post:
       consumes:
@@ -254,11 +285,6 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Wishlist ID
-        in: query
-        name: wishlist_id
-        required: true
-        type: integer
       - description: request body
         in: body
         name: item

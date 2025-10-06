@@ -212,6 +212,23 @@ func (q *Queries) DeleteWishlistItem(ctx context.Context, arg DeleteWishlistItem
 	return err
 }
 
+const denyFriendsRequest = `-- name: DenyFriendsRequest :exec
+DELETE
+FROM friends_requests
+WHERE user_id_to = $1
+  AND user_id_from = $2
+`
+
+type DenyFriendsRequestParams struct {
+	UserIDTo   int64 `json:"user_id_to"`
+	UserIDFrom int64 `json:"user_id_from"`
+}
+
+func (q *Queries) DenyFriendsRequest(ctx context.Context, arg DenyFriendsRequestParams) error {
+	_, err := q.db.Exec(ctx, denyFriendsRequest, arg.UserIDTo, arg.UserIDFrom)
+	return err
+}
+
 const getFriendWishlists = `-- name: GetFriendWishlists :many
 SELECT id, owner_id, title, description, is_private
 FROM wishlists
@@ -311,6 +328,17 @@ func (q *Queries) GetIncomingFriendsRequests(ctx context.Context, userIDTo int64
 		return nil, err
 	}
 	return items, nil
+}
+
+const getIncomingFriendsRequestsCount = `-- name: GetIncomingFriendsRequestsCount :one
+SELECT count(*) FROM friends_requests WHERE user_id_to = $1
+`
+
+func (q *Queries) GetIncomingFriendsRequestsCount(ctx context.Context, userIDTo int64) (int64, error) {
+	row := q.db.QueryRow(ctx, getIncomingFriendsRequestsCount, userIDTo)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const getUser = `-- name: GetUser :one

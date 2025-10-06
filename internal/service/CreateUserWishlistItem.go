@@ -11,6 +11,7 @@ import (
 )
 
 type CreateWishlistItemRequest struct {
+	WishlistID  int64              `json:"wishlist_id"`
 	Title       string             `json:"title"`
 	Description string             `json:"description"`
 	Price       string             `json:"price"`
@@ -31,7 +32,7 @@ type WishlistItem struct {
 	Price       string             `json:"price"`
 	Links       []WishlistItemLink `json:"links"`
 	Reservable  bool               `json:"reservable"`
-	ReservedBy  *int64             `json:"reserved_by"`
+	Reserved    bool               `json:"reserved"`
 }
 
 // CreateUserWishlistItem godoc
@@ -40,7 +41,6 @@ type WishlistItem struct {
 // @Router /api/user/wishlist/item [post]
 // @Security ApiKeyAuth
 // @Accept json
-// @Param wishlist_id query int true "Wishlist ID"
 // @Produce json
 // @Param item body CreateWishlistItemRequest true "request body"
 // @Success 200 {object} WishlistItem
@@ -114,6 +114,6 @@ func mapStoreWishlistItemToWishlistItem(item store.WishlistItem) WishlistItem {
 		Price:       item.Price,
 		Links:       links,
 		Reservable:  item.Reservable,
-		ReservedBy:  reservedBy,
+		Reserved:    reservedBy != nil,
 	}
 }

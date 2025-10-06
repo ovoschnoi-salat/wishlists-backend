@@ -2,7 +2,7 @@ services:
 
   db:
     container_name: wishlists-db
-    image: postgres:latest
+    image: postgres:17
     restart: unless-stopped
     environment:
       POSTGRES_DB: "wishlists"
@@ -26,6 +26,8 @@ services:
     environment:
       PG_DSN: "postgresql://postgres:postgres@wishlists-db:5432/wishlists"
       PORT: "${BACKEND_PORT}"
+    depends_on:
+      - db
     networks:
       - backend_network
 

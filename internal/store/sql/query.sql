@@ -40,6 +40,9 @@ SELECT *
 FROM users
 WHERE id IN (SELECT user_id_from FROM friends_requests WHERE user_id_to = $1);
 
+-- name: GetIncomingFriendsRequestsCount :one
+SELECT count(*) FROM friends_requests WHERE user_id_to = $1;
+
 -- name: CreateFriendsRelationship :exec
 INSERT INTO friends (user_id, friend_id)
 VALUES ($1, $2),
@@ -62,6 +65,12 @@ FROM deleted_request
 UNION ALL
 SELECT user_id_to, user_id_from
 FROM deleted_request;
+
+-- name: DenyFriendsRequest :exec
+DELETE
+FROM friends_requests
+WHERE user_id_to = $1
+  AND user_id_from = $2;
 
 -- name: GetWishlistItems :many
 SELECT *
