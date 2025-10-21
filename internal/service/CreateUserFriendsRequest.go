@@ -3,10 +3,11 @@ package service
 import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 // CreateUserFriendsRequest godoc
@@ -25,23 +26,34 @@ func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 	}
 
 	friendUsernameStr := c.Query("username")
-	friendUsername, err := strconv.ParseInt(friendUsernameStr, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid friend ID"})
-		return
-	}
 
-	if authData.User.ID == friendUsername {
+	if authData.User.Username == friendUsernameStr {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send friend request to yourself"})
 		return
 	}
 
-	err = s.db.CreateFriendsRequest(c, store.CreateFriendsRequestParams{
+	friend, err := s.db.GetUserByUsername(c, friendUsernameStr)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+		c.Error(err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	count, err := s.db.CreateFriendsRequest(c, store.CreateFriendsRequestParams{
 		UserIDFrom: authData.User.ID,
-		UserIDTo:   friendUsername,
+		UserIDTo:   friend.ID,
 	})
 	if err != nil {
 		c.Error(err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	if count < 1 {
+		c.Error(errors.New("no rows updated"))
 		c.Status(http.StatusInternalServerError)
 		return
 	}

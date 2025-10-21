@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -32,12 +33,17 @@ func (s *Service) AcceptUserIncomingFriendsRequest(c *gin.Context) {
 	}
 
 	// Accept the friend request
-	err = s.db.AcceptFriendsRequest(c, store.AcceptFriendsRequestParams{
+	count, err := s.db.AcceptFriendsRequest(c, store.AcceptFriendsRequestParams{
 		UserIDFrom: friendID,
 		UserIDTo:   authData.User.ID,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+	if count < 1 {
+		c.Error(errors.New("no rows updated"))
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 

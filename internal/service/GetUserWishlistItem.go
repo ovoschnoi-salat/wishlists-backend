@@ -2,7 +2,6 @@ package service
 
 import (
 	"backend/internal/middlewares"
-	"backend/internal/store"
 	"net/http"
 	"strconv"
 
@@ -33,13 +32,14 @@ func (s *Service) GetUserWishlistItem(c *gin.Context) {
 	}
 
 	// Get wishlist items
-	item, err := s.db.GetWishlistItem(c, store.GetWishlistItemParams{
-		ID:      itemID,
-		OwnerID: authData.User.ID,
-	})
+	item, err := s.db.GetWishlistItem(c, itemID)
 	if err != nil {
 		c.Error(err)
 		c.Status(http.StatusInternalServerError)
+		return
+	}
+	if item.OwnerID != authData.User.ID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid wishlist ID"})
 		return
 	}
 

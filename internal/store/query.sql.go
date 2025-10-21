@@ -7,9 +7,11 @@ package store
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const acceptFriendsRequest = `-- name: AcceptFriendsRequest :exec
+const acceptFriendsRequest = `-- name: AcceptFriendsRequest :execrows
 WITH deleted_request AS (
     DELETE FROM friends_requests
         WHERE user_id_to = $1 AND user_id_from = $2
@@ -28,9 +30,31 @@ type AcceptFriendsRequestParams struct {
 	UserIDFrom int64 `json:"user_id_from"`
 }
 
-func (q *Queries) AcceptFriendsRequest(ctx context.Context, arg AcceptFriendsRequestParams) error {
-	_, err := q.db.Exec(ctx, acceptFriendsRequest, arg.UserIDTo, arg.UserIDFrom)
-	return err
+func (q *Queries) AcceptFriendsRequest(ctx context.Context, arg AcceptFriendsRequestParams) (int64, error) {
+	result, err := q.db.Exec(ctx, acceptFriendsRequest, arg.UserIDTo, arg.UserIDFrom)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const checkIfFriends = `-- name: CheckIfFriends :one
+SELECT user_id, friend_id
+FROM friends
+WHERE user_id = $1
+  AND friend_id = $2
+`
+
+type CheckIfFriendsParams struct {
+	UserID   int64 `json:"user_id"`
+	FriendID int64 `json:"friend_id"`
+}
+
+func (q *Queries) CheckIfFriends(ctx context.Context, arg CheckIfFriendsParams) (Friend, error) {
+	row := q.db.QueryRow(ctx, checkIfFriends, arg.UserID, arg.FriendID)
+	var i Friend
+	err := row.Scan(&i.UserID, &i.FriendID)
+	return i, err
 }
 
 const checkIfUserHasAccessToWishlist = `-- name: CheckIfUserHasAccessToWishlist :one
@@ -53,7 +77,26 @@ func (q *Queries) CheckIfUserHasAccessToWishlist(ctx context.Context, arg CheckI
 	return id, err
 }
 
-const createFriendsRelationship = `-- name: CreateFriendsRelationship :exec
+const checkUserHasAccessToPrivateWishlist = `-- name: CheckUserHasAccessToPrivateWishlist :one
+SELECT list_id, user_id, owner_id
+FROM wishlist_access_list
+WHERE list_id = $1
+  AND user_id = $2
+`
+
+type CheckUserHasAccessToPrivateWishlistParams struct {
+	ListID int64 `json:"list_id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) CheckUserHasAccessToPrivateWishlist(ctx context.Context, arg CheckUserHasAccessToPrivateWishlistParams) (WishlistAccessList, error) {
+	row := q.db.QueryRow(ctx, checkUserHasAccessToPrivateWishlist, arg.ListID, arg.UserID)
+	var i WishlistAccessList
+	err := row.Scan(&i.ListID, &i.UserID, &i.OwnerID)
+	return i, err
+}
+
+const createFriendsRelationship = `-- name: CreateFriendsRelationship :execrows
 INSERT INTO friends (user_id, friend_id)
 VALUES ($1, $2),
        ($2, $1)
@@ -64,12 +107,15 @@ type CreateFriendsRelationshipParams struct {
 	FriendID int64 `json:"friend_id"`
 }
 
-func (q *Queries) CreateFriendsRelationship(ctx context.Context, arg CreateFriendsRelationshipParams) error {
-	_, err := q.db.Exec(ctx, createFriendsRelationship, arg.UserID, arg.FriendID)
-	return err
+func (q *Queries) CreateFriendsRelationship(ctx context.Context, arg CreateFriendsRelationshipParams) (int64, error) {
+	result, err := q.db.Exec(ctx, createFriendsRelationship, arg.UserID, arg.FriendID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const createFriendsRequest = `-- name: CreateFriendsRequest :exec
+const createFriendsRequest = `-- name: CreateFriendsRequest :execrows
 INSERT INTO friends_requests (user_id_from, user_id_to)
 VALUES ($1, $2)
 `
@@ -79,12 +125,15 @@ type CreateFriendsRequestParams struct {
 	UserIDTo   int64 `json:"user_id_to"`
 }
 
-func (q *Queries) CreateFriendsRequest(ctx context.Context, arg CreateFriendsRequestParams) error {
-	_, err := q.db.Exec(ctx, createFriendsRequest, arg.UserIDFrom, arg.UserIDTo)
-	return err
+func (q *Queries) CreateFriendsRequest(ctx context.Context, arg CreateFriendsRequestParams) (int64, error) {
+	result, err := q.db.Exec(ctx, createFriendsRequest, arg.UserIDFrom, arg.UserIDTo)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const createUser = `-- name: CreateUser :exec
+const createUser = `-- name: CreateUser :execrows
 INSERT INTO users (id, username, name, photo_url)
 VALUES ($1, $2, $3, $4)
 `
@@ -96,14 +145,17 @@ type CreateUserParams struct {
 	PhotoUrl string `json:"photo_url"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.Exec(ctx, createUser,
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, error) {
+	result, err := q.db.Exec(ctx, createUser,
 		arg.ID,
 		arg.Username,
 		arg.Name,
 		arg.PhotoUrl,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const createWishlist = `-- name: CreateWishlist :one
@@ -178,7 +230,7 @@ func (q *Queries) CreateWishlistItem(ctx context.Context, arg CreateWishlistItem
 	return i, err
 }
 
-const deleteWishlist = `-- name: DeleteWishlist :exec
+const deleteWishlist = `-- name: DeleteWishlist :execrows
 DELETE
 FROM wishlists
 where id = $1
@@ -190,12 +242,15 @@ type DeleteWishlistParams struct {
 	OwnerID int64 `json:"owner_id"`
 }
 
-func (q *Queries) DeleteWishlist(ctx context.Context, arg DeleteWishlistParams) error {
-	_, err := q.db.Exec(ctx, deleteWishlist, arg.ID, arg.OwnerID)
-	return err
+func (q *Queries) DeleteWishlist(ctx context.Context, arg DeleteWishlistParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteWishlist, arg.ID, arg.OwnerID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const deleteWishlistItem = `-- name: DeleteWishlistItem :exec
+const deleteWishlistItem = `-- name: DeleteWishlistItem :execrows
 DELETE
 FROM wishlist_items
 WHERE id = $1
@@ -207,12 +262,15 @@ type DeleteWishlistItemParams struct {
 	OwnerID int64 `json:"owner_id"`
 }
 
-func (q *Queries) DeleteWishlistItem(ctx context.Context, arg DeleteWishlistItemParams) error {
-	_, err := q.db.Exec(ctx, deleteWishlistItem, arg.ID, arg.OwnerID)
-	return err
+func (q *Queries) DeleteWishlistItem(ctx context.Context, arg DeleteWishlistItemParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteWishlistItem, arg.ID, arg.OwnerID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const denyFriendsRequest = `-- name: DenyFriendsRequest :exec
+const denyFriendsRequest = `-- name: DenyFriendsRequest :execrows
 DELETE
 FROM friends_requests
 WHERE user_id_to = $1
@@ -224,9 +282,12 @@ type DenyFriendsRequestParams struct {
 	UserIDFrom int64 `json:"user_id_from"`
 }
 
-func (q *Queries) DenyFriendsRequest(ctx context.Context, arg DenyFriendsRequestParams) error {
-	_, err := q.db.Exec(ctx, denyFriendsRequest, arg.UserIDTo, arg.UserIDFrom)
-	return err
+func (q *Queries) DenyFriendsRequest(ctx context.Context, arg DenyFriendsRequestParams) (int64, error) {
+	result, err := q.db.Exec(ctx, denyFriendsRequest, arg.UserIDTo, arg.UserIDFrom)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const getFriendWishlists = `-- name: GetFriendWishlists :many
@@ -331,7 +392,9 @@ func (q *Queries) GetIncomingFriendsRequests(ctx context.Context, userIDTo int64
 }
 
 const getIncomingFriendsRequestsCount = `-- name: GetIncomingFriendsRequestsCount :one
-SELECT count(*) FROM friends_requests WHERE user_id_to = $1
+SELECT count(*)
+FROM friends_requests
+WHERE user_id_to = $1
 `
 
 func (q *Queries) GetIncomingFriendsRequestsCount(ctx context.Context, userIDTo int64) (int64, error) {
@@ -339,6 +402,37 @@ func (q *Queries) GetIncomingFriendsRequestsCount(ctx context.Context, userIDTo 
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const getOutcomingFriendsRequests = `-- name: GetOutcomingFriendsRequests :many
+SELECT id, username, name, photo_url
+FROM users
+WHERE id IN (SELECT user_id_to FROM friends_requests WHERE user_id_from = $1)
+`
+
+func (q *Queries) GetOutcomingFriendsRequests(ctx context.Context, userIDFrom int64) ([]User, error) {
+	rows, err := q.db.Query(ctx, getOutcomingFriendsRequests, userIDFrom)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Name,
+			&i.PhotoUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUser = `-- name: GetUser :one
@@ -359,20 +453,51 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 	return i, err
 }
 
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, username, name, photo_url
+FROM users
+WHERE username = $1
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Name,
+		&i.PhotoUrl,
+	)
+	return i, err
+}
+
+const getWishlistByWishId = `-- name: GetWishlistByWishId :one
+SELECT id, owner_id, title, description, is_private
+FROM wishlists
+WHERE wishlists.id = (SELECT wishlist_id FROM wishlist_items WHERE wishlist_items.id = $1)
+`
+
+func (q *Queries) GetWishlistByWishId(ctx context.Context, id int64) (Wishlist, error) {
+	row := q.db.QueryRow(ctx, getWishlistByWishId, id)
+	var i Wishlist
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.Title,
+		&i.Description,
+		&i.IsPrivate,
+	)
+	return i, err
+}
+
 const getWishlistItem = `-- name: GetWishlistItem :one
 SELECT id, owner_id, wishlist_id, title, description, price, links, reservable, reserved_by
 FROM wishlist_items
 WHERE id = $1
-  and owner_id = $2
 `
 
-type GetWishlistItemParams struct {
-	ID      int64 `json:"id"`
-	OwnerID int64 `json:"owner_id"`
-}
-
-func (q *Queries) GetWishlistItem(ctx context.Context, arg GetWishlistItemParams) (WishlistItem, error) {
-	row := q.db.QueryRow(ctx, getWishlistItem, arg.ID, arg.OwnerID)
+func (q *Queries) GetWishlistItem(ctx context.Context, id int64) (WishlistItem, error) {
+	row := q.db.QueryRow(ctx, getWishlistItem, id)
 	var i WishlistItem
 	err := row.Scan(
 		&i.ID,
@@ -462,7 +587,47 @@ func (q *Queries) GetWishlists(ctx context.Context, ownerID int64) ([]Wishlist, 
 	return items, nil
 }
 
-const updateWishlist = `-- name: UpdateWishlist :exec
+const reserveWishlistItem = `-- name: ReserveWishlistItem :execrows
+UPDATE wishlist_items
+SET reserved_by = $2
+WHERE id = $1
+  AND reserved_by IS NULL
+`
+
+type ReserveWishlistItemParams struct {
+	ID         int64       `json:"id"`
+	ReservedBy pgtype.Int8 `json:"reserved_by"`
+}
+
+func (q *Queries) ReserveWishlistItem(ctx context.Context, arg ReserveWishlistItemParams) (int64, error) {
+	result, err := q.db.Exec(ctx, reserveWishlistItem, arg.ID, arg.ReservedBy)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const unreserveWishlistItem = `-- name: UnreserveWishlistItem :execrows
+UPDATE wishlist_items
+SET reserved_by = NULL
+WHERE id = $1
+  AND reserved_by = $2
+`
+
+type UnreserveWishlistItemParams struct {
+	ID         int64       `json:"id"`
+	ReservedBy pgtype.Int8 `json:"reserved_by"`
+}
+
+func (q *Queries) UnreserveWishlistItem(ctx context.Context, arg UnreserveWishlistItemParams) (int64, error) {
+	result, err := q.db.Exec(ctx, unreserveWishlistItem, arg.ID, arg.ReservedBy)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const updateWishlist = `-- name: UpdateWishlist :execrows
 UPDATE wishlists
 SET title       = $1,
     description = $2,
@@ -479,18 +644,21 @@ type UpdateWishlistParams struct {
 	OwnerID     int64  `json:"owner_id"`
 }
 
-func (q *Queries) UpdateWishlist(ctx context.Context, arg UpdateWishlistParams) error {
-	_, err := q.db.Exec(ctx, updateWishlist,
+func (q *Queries) UpdateWishlist(ctx context.Context, arg UpdateWishlistParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateWishlist,
 		arg.Title,
 		arg.Description,
 		arg.IsPrivate,
 		arg.ID,
 		arg.OwnerID,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const updateWishlistItem = `-- name: UpdateWishlistItem :exec
+const updateWishlistItem = `-- name: UpdateWishlistItem :execrows
 UPDATE wishlist_items
 SET title       = $1,
     description = $2,
@@ -511,8 +679,8 @@ type UpdateWishlistItemParams struct {
 	OwnerID     int64  `json:"owner_id"`
 }
 
-func (q *Queries) UpdateWishlistItem(ctx context.Context, arg UpdateWishlistItemParams) error {
-	_, err := q.db.Exec(ctx, updateWishlistItem,
+func (q *Queries) UpdateWishlistItem(ctx context.Context, arg UpdateWishlistItemParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateWishlistItem,
 		arg.Title,
 		arg.Description,
 		arg.Price,
@@ -521,5 +689,8 @@ func (q *Queries) UpdateWishlistItem(ctx context.Context, arg UpdateWishlistItem
 		arg.ID,
 		arg.OwnerID,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

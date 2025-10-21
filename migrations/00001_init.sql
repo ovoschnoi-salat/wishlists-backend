@@ -11,16 +11,16 @@ CREATE TABLE IF NOT EXISTS users
 
 CREATE TABLE IF NOT EXISTS friends
 (
-    user_id   BIGINT NOT NULL REFERENCES users (id),
-    friend_id BIGINT NOT NULL REFERENCES users (id),
+    user_id   BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    friend_id BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
 
     PRIMARY KEY (user_id, friend_id)
 );
 
 CREATE TABLE IF NOT EXISTS friends_requests
 (
-    user_id_to   BIGINT NOT NULL REFERENCES users (id),
-    user_id_from BIGINT NOT NULL REFERENCES users (id),
+    user_id_to   BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    user_id_from BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
 
     PRIMARY KEY (user_id_to, user_id_from)
 );
@@ -30,7 +30,7 @@ CREATE INDEX IF NOT EXISTS friends_requests_user_id_from_idx ON friends_requests
 CREATE TABLE IF NOT EXISTS wishlists
 (
     id          BIGSERIAL PRIMARY KEY,
-    owner_id    BIGINT  NOT NULL REFERENCES users (id),
+    owner_id    BIGINT  NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     title       TEXT    NOT NULL,
     description TEXT    NOT NULL,
     is_private  BOOLEAN NOT NULL
@@ -38,9 +38,9 @@ CREATE TABLE IF NOT EXISTS wishlists
 
 CREATE TABLE IF NOT EXISTS wishlist_access_list
 (
-    list_id BIGINT NOT NULL REFERENCES wishlists (id),
-    user_id BIGINT NOT NULL REFERENCES users (id),
-    owner_id BIGINT NOT NULL REFERENCES users (id),
+    list_id BIGINT NOT NULL REFERENCES wishlists (id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    owner_id BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
 
     PRIMARY KEY (list_id, user_id)
 );
@@ -50,14 +50,14 @@ CREATE INDEX IF NOT EXISTS wishlist_access_list_owner_id_user_id_idx ON wishlist
 CREATE TABLE IF NOT EXISTS wishlist_items
 (
     id          BIGSERIAL PRIMARY KEY,
-    owner_id    BIGINT  NOT NULL REFERENCES users (id),
-    wishlist_id BIGINT  NOT NULL REFERENCES wishlists (id),
+    owner_id    BIGINT  NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    wishlist_id BIGINT  NOT NULL REFERENCES wishlists (id) ON DELETE CASCADE,
     title       TEXT    NOT NULL,
     description TEXT    NOT NULL,
     price       TEXT    NOT NULL,
     links       jsonb   NOT NULL,
     reservable  BOOLEAN NOT NULL,
-    reserved_by BIGINT REFERENCES users (id)
+    reserved_by BIGINT REFERENCES users (id) ON DELETE SET NULL
 );
 
 -- +goose StatementEnd

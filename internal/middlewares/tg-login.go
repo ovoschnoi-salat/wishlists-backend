@@ -38,7 +38,7 @@ func NewTgAuthMiddleware(secretToken string, db *store.Queries) gin.HandlerFunc 
 		}
 		_, err = db.GetUser(c, data.User.ID)
 		if errors.Is(err, pgx.ErrNoRows) {
-			err = db.CreateUser(c, store.CreateUserParams{
+			count, err := db.CreateUser(c, store.CreateUserParams{
 				ID:       data.User.ID,
 				Username: data.User.Username,
 				Name:     data.User.FirstName + " " + data.User.LastName,
