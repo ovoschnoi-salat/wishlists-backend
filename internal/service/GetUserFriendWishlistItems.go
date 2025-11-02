@@ -13,15 +13,15 @@ import (
 )
 
 type FriendWishlistItem struct {
-	ID                       int64           `json:"id"`
-	WishlistID               int64           `json:"wishlist_id"`
-	Title                    string          `json:"title"`
-	Description              string          `json:"description"`
-	Price                    string          `json:"price"`
-	Links                    json.RawMessage `json:"links"`
-	Reservable               bool            `json:"reservable"`
-	Reserved                 bool            `json:"reserved"`
-	ReservationCanBeCanceled bool            `json:"reservation_can_be_canceled"`
+	ID                       int64              `json:"id"`
+	WishlistID               int64              `json:"wishlist_id"`
+	Title                    string             `json:"title"`
+	Description              string             `json:"description"`
+	Price                    string             `json:"price"`
+	Links                    []WishlistItemLink `json:"links"`
+	Reservable               bool               `json:"reservable"`
+	Reserved                 bool               `json:"reserved"`
+	ReservationCanBeCanceled bool               `json:"reservation_can_be_canceled"`
 }
 
 // GetUserFriendWishlistItems godoc
@@ -73,25 +73,33 @@ func (s *Service) GetUserFriendWishlistItems(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, mapStoreWishlistItemsToFriendWishlistItems(items))
+	c.JSON(http.StatusOK, mapStoreWishlistItemsToFriendWishlistItems(items, authData.User.ID))
 }
 
-func mapStoreWishlistItemsToFriendWishlistItems(items []store.WishlistItem) []FriendWishlistItem {
+func mapStoreWishlistItemsToFriendWishlistItems(items []store.WishlistItem, userID int64) []FriendWishlistItem {
 	res := make([]FriendWishlistItem, len(items))
 	for i, item := range items {
-		res[i] = mapStoreWishlistItemToFriendWishlistItem(item)
+		res[i] = mapStoreWishlistItemToFriendWishlistItem(item, userID)
 	}
 	return res
 }
 
-func mapStoreWishlistItemToFriendWishlistItem(item store.WishlistItem) FriendWishlistItem {
+func mapStoreWishlistItemToFriendWishlistItem(item store.WishlistItem, userID int64) FriendWishlistItem {
+	// Parse links from JSON bytes
+	var links []WishlistItemLink
+	if len(item.Links) > 2 {
+		json.Unmarshal(item.Links, &links)
+	}
+
 	return FriendWishlistItem{
-		ID:          item.ID,
-		WishlistID:  item.WishlistID,
-		Title:       item.Title,
-		Description: item.Description,
-		Price:       item.Price,
-		Links:       item.Links,
-		Reservable:  item.Reservable,
+		ID:                       item.ID,
+		WishlistID:               item.WishlistID,
+		Title:                    item.Title,
+		Description:              item.Description,
+		Price:                    item.Price,
+		Links:                    links,
+		Reservable:               item.Reservable,
+		Reserved:                 item.ReservedBy.Valid,
+		ReservationCanBeCanceled: item.ReservedBy.Valid && item.ReservedBy.Int64 == userID,
 	}
 }

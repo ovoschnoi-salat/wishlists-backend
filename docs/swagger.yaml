@@ -47,6 +47,29 @@ definitions:
       title:
         type: string
     type: object
+  service.FriendWishlistItem:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      links:
+        items:
+          $ref: '#/definitions/service.WishlistItemLink'
+        type: array
+      price:
+        type: string
+      reservable:
+        type: boolean
+      reservation_can_be_canceled:
+        type: boolean
+      reserved:
+        type: boolean
+      title:
+        type: string
+      wishlist_id:
+        type: integer
+    type: object
   service.IncomingFriendsRequestsCountResponse:
     properties:
       count:
@@ -76,8 +99,6 @@ definitions:
       price:
         type: string
       reservable:
-        type: boolean
-      reserved:
         type: boolean
       title:
         type: string
@@ -167,7 +188,14 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/service.WishlistItem'
+              allOf:
+              - $ref: '#/definitions/service.FriendWishlistItem'
+              - properties:
+                  links:
+                    items:
+                      $ref: '#/definitions/service.WishlistItemLink'
+                    type: array
+                type: object
             type: array
       security:
       - ApiKeyAuth: []

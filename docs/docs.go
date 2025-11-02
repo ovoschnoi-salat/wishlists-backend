@@ -134,7 +134,22 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/service.WishlistItem"
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/service.FriendWishlistItem"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "links": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/definitions/service.WishlistItemLink"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
                             }
                         }
                     }
@@ -659,6 +674,41 @@ const docTemplate = `{
                 }
             }
         },
+        "service.FriendWishlistItem": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.WishlistItemLink"
+                    }
+                },
+                "price": {
+                    "type": "string"
+                },
+                "reservable": {
+                    "type": "boolean"
+                },
+                "reservation_can_be_canceled": {
+                    "type": "boolean"
+                },
+                "reserved": {
+                    "type": "boolean"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "wishlist_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "service.IncomingFriendsRequestsCountResponse": {
             "type": "object",
             "properties": {
@@ -703,9 +753,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "reservable": {
-                    "type": "boolean"
-                },
-                "reserved": {
                     "type": "boolean"
                 },
                 "title": {
