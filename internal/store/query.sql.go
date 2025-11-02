@@ -259,6 +259,32 @@ func (q *Queries) DeleteWishlist(ctx context.Context, arg DeleteWishlistParams) 
 	return result.RowsAffected(), nil
 }
 
+const deleteWishlistAccessItem = `-- name: DeleteWishlistAccessItem :execrows
+DELETE from wishlist_access_list WHERE list_id = $1 AND user_id = $2
+`
+
+type DeleteWishlistAccessItemParams struct {
+	ListID int64 `json:"list_id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) DeleteWishlistAccessItem(ctx context.Context, arg DeleteWishlistAccessItemParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteWishlistAccessItem, arg.ListID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const deleteWishlistAccessItems = `-- name: DeleteWishlistAccessItems :exec
+DELETE from wishlist_access_list WHERE list_id = $1
+`
+
+func (q *Queries) DeleteWishlistAccessItems(ctx context.Context, listID int64) error {
+	_, err := q.db.Exec(ctx, deleteWishlistAccessItems, listID)
+	return err
+}
+
 const deleteWishlistItem = `-- name: DeleteWishlistItem :execrows
 DELETE
 FROM wishlist_items
@@ -485,6 +511,37 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.PhotoUrl,
 	)
 	return i, err
+}
+
+const getWishlistAccessList = `-- name: GetWishlistAccessList :many
+SELECT list_id, user_id, owner_id, created_at
+FROM wishlist_access_list
+WHERE list_id = $1
+`
+
+func (q *Queries) GetWishlistAccessList(ctx context.Context, listID int64) ([]WishlistAccessList, error) {
+	rows, err := q.db.Query(ctx, getWishlistAccessList, listID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []WishlistAccessList
+	for rows.Next() {
+		var i WishlistAccessList
+		if err := rows.Scan(
+			&i.ListID,
+			&i.UserID,
+			&i.OwnerID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getWishlistByWishId = `-- name: GetWishlistByWishId :one

@@ -55,5 +55,68 @@ func (s *Service) UpdateWishlist(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 		return
 	}
+
+	if req.IsPrivate {
+		accessList, err := s.db.GetWishlistAccessList(c, wishlistID)
+		if err != nil {
+			c.Error(err)
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+		usersWithAccessOld := make(map[int64]struct{}, len(accessList))
+		for _, accessItem := range accessList {
+			usersWithAccessOld[accessItem.UserID] = struct{}{}
+		}
+		usersWithAccessNew := make(map[int64]struct{}, len(req.UsersWithAccess))
+		for _, usersWithAccess := range req.UsersWithAccess {
+			usersWithAccessNew[usersWithAccess] = struct{}{}
+		}
+
+		for userID := range usersWithAccessOld {
+			if _, ok := usersWithAccessNew[userID]; !ok {
+				count, err := s.db.DeleteWishlistAccessItem(c, store.DeleteWishlistAccessItemParams{
+					ListID: wishlistID,
+					UserID: userID,
+				})
+				if err != nil {
+					c.Error(err)
+					c.Status(http.StatusInternalServerError)
+					return
+				}
+				if count == 0 {
+					c.Error(fmt.Errorf("error deleting access for user %d", userID))
+					c.Status(http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+		for userID := range usersWithAccessNew {
+			if _, ok := usersWithAccessOld[userID]; !ok {
+				count, err := s.db.InsertWishlistAccessItem(c, store.InsertWishlistAccessItemParams{
+					ListID:  wishlistID,
+					OwnerID: authData.User.ID,
+					UserID:  userID,
+				})
+				if err != nil {
+					c.Error(err)
+					c.Status(http.StatusInternalServerError)
+					return
+				}
+				if count == 0 {
+					c.Error(fmt.Errorf("error inserting access for user %d", userID))
+					c.Status(http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+	} else {
+		err := s.db.DeleteWishlistAccessItems(c, wishlistID)
+		if err != nil {
+			c.Error(err)
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
 	c.Status(http.StatusNoContent)
 }
