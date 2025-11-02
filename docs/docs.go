@@ -26,7 +26,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Friends"
+                    "Friends requests"
                 ],
                 "summary": "creates a friend request to another user",
                 "parameters": [
@@ -59,7 +59,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "Friends"
+                    "Friends requests"
                 ],
                 "summary": "accepts an incoming friend request",
                 "parameters": [
@@ -86,7 +86,7 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "Friends"
+                    "Friends requests"
                 ],
                 "summary": "accepts an incoming friend request",
                 "parameters": [
@@ -141,7 +141,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/friend/wishlist/wish/reserve": {
+        "/api/user/friend/wishlist/wish/reservation/cancel": {
             "post": {
                 "security": [
                     {
@@ -168,7 +168,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/friend/wishlist/wish/unreserve": {
+        "/api/user/friend/wishlist/wish/reservation/reserve": {
             "post": {
                 "security": [
                     {
@@ -269,7 +269,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Friends"
+                    "Friends requests"
                 ],
                 "summary": "returns user's incoming friends requests",
                 "responses": {
@@ -296,7 +296,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Friends"
+                    "Friends requests"
                 ],
                 "summary": "returns user's incoming friends requests count",
                 "responses": {
@@ -320,7 +320,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Friends"
+                    "Friends requests"
                 ],
                 "summary": "returns user's incoming friends requests",
                 "responses": {

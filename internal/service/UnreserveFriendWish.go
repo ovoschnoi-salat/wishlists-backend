@@ -12,14 +12,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-// UnreserveFriendWish godoc
+// CancelFriendWishReservation godoc
 // @Summary		reserves friend's wish
 // @Tags		Friend's Wish
-// @Router		/api/user/friend/wishlist/wish/unreserve [post]
+// @Router		/api/user/friend/wishlist/wish/reservation/cancel [post]
 // @Security	ApiKeyAuth
 // @Param		wish_id	query	int	true	"Wish ID"
 // @Success		204
-func (s *Service) UnreserveFriendWish(c *gin.Context) {
+func (s *Service) CancelFriendWishReservation(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {
 		c.AbortWithStatus(http.StatusUnauthorized)

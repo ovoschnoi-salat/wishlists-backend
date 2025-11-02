@@ -119,7 +119,7 @@ paths:
       - ApiKeyAuth: []
       summary: creates a friend request to another user
       tags:
-      - Friends
+      - Friends requests
   /api/user/friend/request/accept:
     post:
       parameters:
@@ -135,7 +135,7 @@ paths:
       - ApiKeyAuth: []
       summary: accepts an incoming friend request
       tags:
-      - Friends
+      - Friends requests
   /api/user/friend/request/deny:
     post:
       parameters:
@@ -151,7 +151,7 @@ paths:
       - ApiKeyAuth: []
       summary: accepts an incoming friend request
       tags:
-      - Friends
+      - Friends requests
   /api/user/friend/wishlist/items:
     get:
       parameters:
@@ -174,7 +174,7 @@ paths:
       summary: returns wishlist items
       tags:
       - Friends
-  /api/user/friend/wishlist/wish/reserve:
+  /api/user/friend/wishlist/wish/reservation/cancel:
     post:
       parameters:
       - description: Wish ID
@@ -190,7 +190,7 @@ paths:
       summary: reserves friend's wish
       tags:
       - Friend's Wish
-  /api/user/friend/wishlist/wish/unreserve:
+  /api/user/friend/wishlist/wish/reservation/reserve:
     post:
       parameters:
       - description: Wish ID
@@ -259,7 +259,7 @@ paths:
       - ApiKeyAuth: []
       summary: returns user's incoming friends requests
       tags:
-      - Friends
+      - Friends requests
   /api/user/friends/requests/incoming/count:
     get:
       produces:
@@ -273,7 +273,7 @@ paths:
       - ApiKeyAuth: []
       summary: returns user's incoming friends requests count
       tags:
-      - Friends
+      - Friends requests
   /api/user/friends/requests/outcoming:
     get:
       produces:
@@ -289,7 +289,7 @@ paths:
       - ApiKeyAuth: []
       summary: returns user's incoming friends requests
       tags:
-      - Friends
+      - Friends requests
   /api/user/wishlist:
     patch:
       consumes:

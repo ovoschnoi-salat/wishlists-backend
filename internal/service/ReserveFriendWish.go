@@ -15,7 +15,7 @@ import (
 // ReserveFriendWish godoc
 // @Summary		reserves friend's wish
 // @Tags		Friend's Wish
-// @Router		/api/user/friend/wishlist/wish/reserve [post]
+// @Router		/api/user/friend/wishlist/wish/reservation/reserve [post]
 // @Security	ApiKeyAuth
 // @Param		wish_id query int true "Wish ID"
 // @Success		204

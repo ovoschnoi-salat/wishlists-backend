@@ -24,14 +24,13 @@ type WishlistItemLink struct {
 }
 
 type WishlistItem struct {
-	ID          int64              `json:"id"`
-	WishlistID  int64              `json:"wishlist_id"`
-	Title       string             `json:"title"`
-	Description string             `json:"description"`
-	Price       string             `json:"price"`
-	Links       []WishlistItemLink `json:"links"`
-	Reservable  bool               `json:"reservable"`
-	Reserved    bool               `json:"reserved"`
+	ID          int64           `json:"id"`
+	WishlistID  int64           `json:"wishlist_id"`
+	Title       string          `json:"title"`
+	Description string          `json:"description"`
+	Price       string          `json:"price"`
+	Links       json.RawMessage `json:"links"`
+	Reservable  bool            `json:"reservable"`
 }
 
 // CreateUserWishlistItem godoc
@@ -84,26 +83,13 @@ func (s *Service) CreateUserWishlistItem(c *gin.Context) {
 }
 
 func mapStoreWishlistItemToWishlistItem(item store.WishlistItem) WishlistItem {
-	// Parse links from JSON bytes
-	var links []WishlistItemLink
-	if len(item.Links) > 0 {
-		json.Unmarshal(item.Links, &links)
-	}
-
-	// Handle reserved_by field
-	var reservedBy *int64
-	if item.ReservedBy.Valid {
-		reservedBy = &item.ReservedBy.Int64
-	}
-
 	return WishlistItem{
 		ID:          item.ID,
 		WishlistID:  item.WishlistID,
 		Title:       item.Title,
 		Description: item.Description,
 		Price:       item.Price,
-		Links:       links,
+		Links:       item.Links,
 		Reservable:  item.Reservable,
-		Reserved:    reservedBy != nil,
 	}
 }
