@@ -12,7 +12,7 @@ import (
 
 // DenyUserIncomingFriendsRequest godoc
 // @Summary accepts an incoming friend request
-// @Tags Friends
+// @Tags Friends requests
 // @Router /api/user/friend/request/deny [post]
 // @Security ApiKeyAuth
 // @Param friend_id query int true "Friend ID"

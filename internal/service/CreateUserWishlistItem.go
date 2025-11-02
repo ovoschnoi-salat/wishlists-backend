@@ -5,7 +5,6 @@ import (
 	"backend/internal/store"
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -51,18 +50,9 @@ func (s *Service) CreateUserWishlistItem(c *gin.Context) {
 		return
 	}
 
-	// Get wishlist ID from URL parameter
-	wishlistIDStr := c.Query("wishlist_id")
-	wishlistID, err := strconv.ParseInt(wishlistIDStr, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid wishlist ID"})
-		return
-	}
-
 	// Parse request body
 	req := new(CreateWishlistItemRequest)
-	err = c.BindJSON(req)
-	if err != nil {
+	if err := c.BindJSON(req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
@@ -76,7 +66,7 @@ func (s *Service) CreateUserWishlistItem(c *gin.Context) {
 
 	// Create the wishlist item
 	item, err := s.db.CreateWishlistItem(c, store.CreateWishlistItemParams{
-		WishlistID:  wishlistID,
+		WishlistID:  req.WishlistID,
 		OwnerID:     authData.User.ID,
 		Title:       req.Title,
 		Description: req.Description,

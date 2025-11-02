@@ -7,21 +7,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetUserIncomingFriendsRequests godoc
+// GetUserOutcomingFriendsRequests godoc
 // @Summary returns user's incoming friends requests
 // @Tags Friends requests
-// @Router /api/user/friends/requests/incoming [get]
+// @Router /api/user/friends/requests/outcoming [get]
 // @Security ApiKeyAuth
 // @Produce json
 // @Success 200 {array} Friend
-func (s *Service) GetUserIncomingFriendsRequests(c *gin.Context) {
+func (s *Service) GetUserOutcomingFriendsRequests(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	requests, err := s.db.GetIncomingFriendsRequests(c, authData.User.ID)
+	requests, err := s.db.GetOutcomingFriendsRequests(c, authData.User.ID)
 	if err != nil {
 		c.Error(err)
 		c.Status(http.StatusInternalServerError)

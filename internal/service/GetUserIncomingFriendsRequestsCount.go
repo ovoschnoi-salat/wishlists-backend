@@ -13,7 +13,7 @@ type IncomingFriendsRequestsCountResponse struct {
 
 // GetUserIncomingFriendsRequestsCount godoc
 // @Summary returns user's incoming friends requests count
-// @Tags Friends
+// @Tags Friends requests
 // @Router /api/user/friends/requests/incoming/count [get]
 // @Security ApiKeyAuth
 // @Produce json

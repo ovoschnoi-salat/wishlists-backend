@@ -9,44 +9,52 @@ import (
 )
 
 type Friend struct {
-	UserID   int64 `json:"user_id"`
-	FriendID int64 `json:"friend_id"`
+	UserID    int64            `json:"user_id"`
+	FriendID  int64            `json:"friend_id"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 
 type FriendsRequest struct {
-	UserIDTo   int64 `json:"user_id_to"`
-	UserIDFrom int64 `json:"user_id_from"`
+	UserIDTo   int64            `json:"user_id_to"`
+	UserIDFrom int64            `json:"user_id_from"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
 }
 
 type User struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username"`
-	Name     string `json:"name"`
-	PhotoUrl string `json:"photo_url"`
+	ID        int64            `json:"id"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	Username  string           `json:"username"`
+	Name      string           `json:"name"`
+	PhotoUrl  string           `json:"photo_url"`
 }
 
 type Wishlist struct {
-	ID          int64  `json:"id"`
-	OwnerID     int64  `json:"owner_id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	IsPrivate   bool   `json:"is_private"`
+	ID          int64            `json:"id"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+	OwnerID     int64            `json:"owner_id"`
+	Title       string           `json:"title"`
+	Description string           `json:"description"`
+	IsPrivate   bool             `json:"is_private"`
 }
 
 type WishlistAccessList struct {
-	ListID  int64 `json:"list_id"`
-	UserID  int64 `json:"user_id"`
-	OwnerID int64 `json:"owner_id"`
+	ListID    int64            `json:"list_id"`
+	UserID    int64            `json:"user_id"`
+	OwnerID   int64            `json:"owner_id"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 
 type WishlistItem struct {
-	ID          int64       `json:"id"`
-	OwnerID     int64       `json:"owner_id"`
-	WishlistID  int64       `json:"wishlist_id"`
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
-	Price       string      `json:"price"`
-	Links       []byte      `json:"links"`
-	Reservable  bool        `json:"reservable"`
-	ReservedBy  pgtype.Int8 `json:"reserved_by"`
+	ID          int64            `json:"id"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+	OwnerID     int64            `json:"owner_id"`
+	WishlistID  int64            `json:"wishlist_id"`
+	Title       string           `json:"title"`
+	Description string           `json:"description"`
+	Price       string           `json:"price"`
+	Links       []byte           `json:"links"`
+	Reservable  bool             `json:"reservable"`
+	ReservedBy  pgtype.Int8      `json:"reserved_by"`
 }

@@ -24,6 +24,10 @@ definitions:
         type: boolean
       title:
         type: string
+      users_with_access:
+        items:
+          type: integer
+        type: array
     type: object
   service.Friend:
     properties:
@@ -94,6 +98,28 @@ info:
   title: Wishlists backend API
   version: "1.0"
 paths:
+  /api/user/friend/request:
+    post:
+      parameters:
+      - description: Friend username
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: creates a friend request to another user
+      tags:
+      - Friends
   /api/user/friend/request/accept:
     post:
       parameters:
@@ -126,28 +152,6 @@ paths:
       summary: accepts an incoming friend request
       tags:
       - Friends
-  /api/user/friend/request/new:
-    post:
-      parameters:
-      - description: Friend username
-        in: query
-        name: username
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - ApiKeyAuth: []
-      summary: creates a friend request to another user
-      tags:
-      - Friends
   /api/user/friend/wishlist/items:
     get:
       parameters:
@@ -170,6 +174,38 @@ paths:
       summary: returns wishlist items
       tags:
       - Friends
+  /api/user/friend/wishlist/wish/reserve:
+    post:
+      parameters:
+      - description: Wish ID
+        in: query
+        name: wish_id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: reserves friend's wish
+      tags:
+      - Friend's Wish
+  /api/user/friend/wishlist/wish/unreserve:
+    post:
+      parameters:
+      - description: Wish ID
+        in: query
+        name: wish_id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: reserves friend's wish
+      tags:
+      - Friend's Wish
   /api/user/friend/wishlists:
     get:
       parameters:
@@ -238,7 +274,48 @@ paths:
       summary: returns user's incoming friends requests count
       tags:
       - Friends
+  /api/user/friends/requests/outcoming:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/service.Friend'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: returns user's incoming friends requests
+      tags:
+      - Friends
   /api/user/wishlist:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Wishlist ID
+        in: query
+        name: wishlist_id
+        required: true
+        type: integer
+      - description: request body
+        in: body
+        name: wishlist
+        required: true
+        schema:
+          $ref: '#/definitions/service.CreateWishlistRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: creates wishlist
+      tags:
+      - User
     post:
       consumes:
       - application/json
@@ -279,6 +356,29 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: returns wishlist item
+      tags:
+      - User
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Item ID
+        in: query
+        name: item_id
+        required: true
+        type: integer
+      - description: Item
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/service.CreateWishlistItemRequest'
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: updates a wishlist item
       tags:
       - User
     post:

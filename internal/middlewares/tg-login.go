@@ -44,6 +44,15 @@ func NewTgAuthMiddleware(secretToken string, db *store.Queries) gin.HandlerFunc 
 				Name:     data.User.FirstName + " " + data.User.LastName,
 				PhotoUrl: data.User.PhotoURL,
 			})
+			if err != nil {
+				c.Error(err)
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+			if count == 0 {
+				c.Error(errors.New("can't create new user"))
+				c.AbortWithStatus(http.StatusInternalServerError)
+			}
 		}
 		if err != nil {
 			c.Error(err)

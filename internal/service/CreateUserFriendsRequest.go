@@ -12,8 +12,8 @@ import (
 
 // CreateUserFriendsRequest godoc
 // @Summary creates a friend request to another user
-// @Tags Friends
-// @Router /api/user/friend/request/new [post]
+// @Tags Friends requests
+// @Router /api/user/friend/request [post]
 // @Security ApiKeyAuth
 // @Param username query string true "Friend username"
 // @Produce json

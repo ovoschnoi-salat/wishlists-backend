@@ -24,7 +24,8 @@ RETURNING *;
 
 -- name: UpdateWishlist :execrows
 UPDATE wishlists
-SET title       = $1,
+SET updated_at  = now(),
+    title       = $1,
     description = $2,
     is_private  = $3
 WHERE id = $4
@@ -108,7 +109,8 @@ RETURNING *;
 
 -- name: UpdateWishlistItem :execrows
 UPDATE wishlist_items
-SET title       = $1,
+SET updated_at  = now(),
+    title       = $1,
     description = $2,
     price       = $3,
     links       = $4,
@@ -124,13 +126,15 @@ WHERE list_id = $1
 
 -- name: ReserveWishlistItem :execrows
 UPDATE wishlist_items
-SET reserved_by = $2
+SET updated_at  = now(),
+    reserved_by = $2
 WHERE id = $1
   AND reserved_by IS NULL;
 
 -- name: UnreserveWishlistItem :execrows
 UPDATE wishlist_items
-SET reserved_by = NULL
+SET updated_at  = now(),
+    reserved_by = NULL
 WHERE id = $1
   AND reserved_by = $2;
 

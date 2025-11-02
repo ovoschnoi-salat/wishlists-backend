@@ -15,6 +15,42 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/user/friend/request": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Friends"
+                ],
+                "summary": "creates a friend request to another user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Friend username",
+                        "name": "username",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/friend/request/accept": {
             "post": {
                 "security": [
@@ -69,42 +105,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user/friend/request/new": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Friends"
-                ],
-                "summary": "creates a friend request to another user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Friend username",
-                        "name": "username",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/user/friend/wishlist/items": {
             "get": {
                 "security": [
@@ -137,6 +137,60 @@ const docTemplate = `{
                                 "$ref": "#/definitions/service.WishlistItem"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/user/friend/wishlist/wish/reserve": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Friend's Wish"
+                ],
+                "summary": "reserves friend's wish",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wish ID",
+                        "name": "wish_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/user/friend/wishlist/wish/unreserve": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Friend's Wish"
+                ],
+                "summary": "reserves friend's wish",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wish ID",
+                        "name": "wish_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }
@@ -255,6 +309,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/friends/requests/outcoming": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Friends"
+                ],
+                "summary": "returns user's incoming friends requests",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/service.Friend"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/wishlist": {
             "post": {
                 "security": [
@@ -289,6 +370,46 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/service.Wishlist"
                         }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "creates wishlist",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wishlist ID",
+                        "name": "wishlist_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "request body",
+                        "name": "wishlist",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.CreateWishlistRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }
@@ -358,6 +479,43 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/service.WishlistItem"
                         }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "updates a wishlist item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "item_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Item",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.CreateWishlistItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }
@@ -464,6 +622,12 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
+                },
+                "users_with_access": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },

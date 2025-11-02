@@ -13,12 +13,12 @@ import (
 )
 
 // ReserveFriendWish godoc
-// @Summary reserves friend's wish
-// @Tags Friend's Wish
-// @Router /api/user/friend/wishlist/wish/reserve [post]
-// @Security ApiKeyAuth
-// @Param wish_id query int true "Wish ID"
-// @Success 204
+// @Summary		reserves friend's wish
+// @Tags		Friend's Wish
+// @Router		/api/user/friend/wishlist/wish/reserve [post]
+// @Security	ApiKeyAuth
+// @Param		wish_id query int true "Wish ID"
+// @Success		204
 func (s *Service) ReserveFriendWish(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {

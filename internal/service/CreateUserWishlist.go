@@ -9,9 +9,10 @@ import (
 )
 
 type CreateWishlistRequest struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	IsPrivate   bool   `json:"is_private"`
+	Title           string  `json:"title"`
+	Description     string  `json:"description"`
+	IsPrivate       bool    `json:"is_private"`
+	UsersWithAccess []int64 `json:"users_with_access"`
 }
 
 // CreateWishlist godoc
@@ -20,8 +21,8 @@ type CreateWishlistRequest struct {
 // @Router /api/user/wishlist [post]
 // @Security ApiKeyAuth
 // @Accept	json
-// @Param	wishlist	body	CreateWishlistRequest	true	"request body"
 // @Produce	json
+// @Param	wishlist	body	CreateWishlistRequest	true	"request body"
 // @Success 200 {object} Wishlist
 func (s *Service) CreateWishlist(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
@@ -46,5 +47,6 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
+	// TODO: insert rows into access_list
 	c.JSON(http.StatusOK, mapStoreWishlistToWishlist(wishlist))
 }
