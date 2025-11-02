@@ -611,6 +611,25 @@ func (q *Queries) GetWishlists(ctx context.Context, ownerID int64) ([]Wishlist, 
 	return items, nil
 }
 
+const insertWishlistAccessItem = `-- name: InsertWishlistAccessItem :execrows
+INSERT INTO wishlist_access_list (list_id, owner_id, user_id)
+VALUES ($1, $2, $3)
+`
+
+type InsertWishlistAccessItemParams struct {
+	ListID  int64 `json:"list_id"`
+	OwnerID int64 `json:"owner_id"`
+	UserID  int64 `json:"user_id"`
+}
+
+func (q *Queries) InsertWishlistAccessItem(ctx context.Context, arg InsertWishlistAccessItemParams) (int64, error) {
+	result, err := q.db.Exec(ctx, insertWishlistAccessItem, arg.ListID, arg.OwnerID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const reserveWishlistItem = `-- name: ReserveWishlistItem :execrows
 UPDATE wishlist_items
 SET updated_at  = now(),

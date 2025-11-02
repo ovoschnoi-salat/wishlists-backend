@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -47,6 +48,19 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	// TODO: insert rows into access_list
+
+	for _, UserID := range req.UsersWithAccess {
+		count, err := s.db.InsertWishlistAccessItem(c, store.InsertWishlistAccessItemParams{
+			ListID:  wishlist.ID,
+			OwnerID: authData.User.ID,
+			UserID:  UserID,
+		})
+		if err != nil {
+			c.Error(err)
+		} else if count == 0 {
+			c.Error(fmt.Errorf("error inserting wishlist access item: not inserted id %d", UserID))
+		}
+	}
+
 	c.JSON(http.StatusOK, mapStoreWishlistToWishlist(wishlist))
 }

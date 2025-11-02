@@ -162,3 +162,7 @@ FROM wishlists
 WHERE id = $1
   AND (is_private = false OR
        id IN (SELECT list_id FROM wishlist_access_list WHERE wishlist_access_list.list_id = $1 AND user_id = $2));
+
+-- name: InsertWishlistAccessItem :execrows
+INSERT INTO wishlist_access_list (list_id, owner_id, user_id)
+VALUES ($1, $2, $3);
