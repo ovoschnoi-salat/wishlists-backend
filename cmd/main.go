@@ -51,7 +51,9 @@ func main() {
 
 	port := os.Getenv("PORT")
 
-	router := gin.Default()
+	router := gin.New()
+	gin.SetMode(gin.ReleaseMode)
+	router.Use(middlewares.Logger, gin.Recovery())
 
 	router.Use(cors.New(cors.Config{
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},

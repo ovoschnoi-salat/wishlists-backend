@@ -1,20 +1,41 @@
 package middlewares
 
 import (
-	"context"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/grpc"
 )
 
-func NewLoggingInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		log.Info().Str("FullMethod", info.FullMethod).Msg("received request")
-		start := time.Now()
-		defer func() {
-			log.Info().Dur("Duration", time.Since(start)).Msg("request completed")
-		}()
-		return handler(ctx, req)
+func Logger(c *gin.Context) {
+	start := time.Now()
+
+	c.Next()
+
+	latency := time.Now().Sub(start)
+	if latency > time.Minute {
+		latency = latency.Truncate(time.Second)
 	}
+	var event *zerolog.Event
+	if c.Writer.Status() >= 500 {
+		event = log.Error()
+	} else {
+		event = log.Info()
+	}
+	event = event.
+		Str("client-ip", c.ClientIP()).
+		Int("status", c.Writer.Status()).
+		Str("latency", latency.String()).
+		Str("method", c.Request.Method).
+		Str("pattern", c.FullPath()).
+		Str("path", c.Request.URL.Path)
+	if len(c.Errors) != 0 {
+		event = event.Strs("errors", c.Errors.Errors())
+	}
+	authData := GetInitDataFromContext(c)
+	if authData != nil {
+		event = event.Any("auth-data", authData)
+	}
+	event.Send()
 }

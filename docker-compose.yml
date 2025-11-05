@@ -1,4 +1,40 @@
 services:
+  loki:
+    image: grafana/loki:latest
+    container_name: wishlists-loki
+    volumes:
+      - ./configs/loki-config.yml:/etc/loki/local-config.yaml
+      - loki-storage:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - backend_network
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: wishlists-promtail
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./configs/promtail-config.yml:/etc/promtail/promtail-config.yml
+    command: -config.file=/etc/promtail/promtail-config.yml
+    depends_on:
+      - loki
+    networks:
+      - backend_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: wishlists-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    networks:
+      - backend_network
+
 
   db:
     container_name: wishlists-db
@@ -31,6 +67,9 @@ services:
     networks:
       - backend_network
 
+volumes:
+  grafana-storage:
+  loki-storage:
 
 networks:
   backend_network:
