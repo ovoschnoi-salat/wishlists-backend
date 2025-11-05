@@ -49,17 +49,17 @@ func (s *Service) GetUserFriendWishlists(c *gin.Context) {
 	c.JSON(http.StatusOK, mapStoreWishlistsToFriendWishlists(wishlists))
 }
 
-func mapStoreWishlistToFriendWishlists(wishlist store.Wishlist) FriendWishlist {
-	return FriendWishlist{
-		ID:    wishlist.ID,
-		Title: wishlist.Title,
-	}
-}
-
 func mapStoreWishlistsToFriendWishlists(wishlists []store.Wishlist) []FriendWishlist {
 	res := make([]FriendWishlist, len(wishlists))
 	for i, u := range wishlists {
 		res[i] = mapStoreWishlistToFriendWishlists(u)
 	}
 	return res
+}
+
+func mapStoreWishlistToFriendWishlists(wishlist store.Wishlist) FriendWishlist {
+	return FriendWishlist{
+		ID:    wishlist.ID,
+		Title: wishlist.Title,
+	}
 }
