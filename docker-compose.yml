@@ -2,9 +2,10 @@ services:
   loki:
     image: grafana/loki:latest
     container_name: wishlists-loki
+    restart: unless-stopped
     volumes:
       - ./configs/loki-config.yml:/etc/loki/local-config.yaml
-      - loki-storage:/loki
+      - .data/.loki_data:/tmp/loki
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - backend_network
@@ -12,6 +13,7 @@ services:
   alloy:
     image: grafana/alloy:latest
     container_name: wishlists-alloy
+    restart: unless-stopped
     ports:
       - "12345:12345"
       - "4317:4317"
@@ -30,6 +32,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: wishlists-grafana
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:

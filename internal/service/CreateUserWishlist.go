@@ -4,7 +4,6 @@ import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -57,7 +56,6 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 				OwnerID: authData.User.ID,
 				UserID:  UserID,
 			})
-			log.Print("adding access for user: ", UserID, " ", count, " error: ", err)
 			if err != nil {
 				c.Error(err)
 			} else if count == 0 {
