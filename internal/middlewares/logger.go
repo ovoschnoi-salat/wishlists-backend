@@ -35,7 +35,7 @@ func Logger(c *gin.Context) {
 	}
 	authData := GetInitDataFromContext(c)
 	if authData != nil {
-		event = event.Any("auth-data", authData)
+		event = event.Any("auth_data", authData)
 	}
 	event.Send()
 }
