@@ -35,7 +35,7 @@ import (
 //	@name		Authorization
 
 func main() {
-	cfg, err := LoadConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("error loading config")
 	}
