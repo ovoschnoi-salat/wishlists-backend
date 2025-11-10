@@ -22,14 +22,15 @@ INSERT INTO wishlists (owner_id, title, description, is_private)
 VALUES ($1, $2, $3, $4)
 RETURNING *;
 
--- name: UpdateWishlist :execrows
+-- name: UpdateWishlist :one
 UPDATE wishlists
 SET updated_at  = now(),
     title       = $1,
     description = $2,
     is_private  = $3
 WHERE id = $4
-  and owner_id = $5;
+  and owner_id = $5
+RETURNING *;
 
 -- name: DeleteWishlist :execrows
 DELETE

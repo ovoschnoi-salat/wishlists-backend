@@ -734,7 +734,7 @@ func (q *Queries) UnreserveWishlistItem(ctx context.Context, arg UnreserveWishli
 	return result.RowsAffected(), nil
 }
 
-const updateWishlist = `-- name: UpdateWishlist :execrows
+const updateWishlist = `-- name: UpdateWishlist :one
 UPDATE wishlists
 SET updated_at  = now(),
     title       = $1,
@@ -742,6 +742,7 @@ SET updated_at  = now(),
     is_private  = $3
 WHERE id = $4
   and owner_id = $5
+RETURNING id, created_at, updated_at, owner_id, title, description, is_private
 `
 
 type UpdateWishlistParams struct {
@@ -752,18 +753,25 @@ type UpdateWishlistParams struct {
 	OwnerID     int64  `json:"owner_id"`
 }
 
-func (q *Queries) UpdateWishlist(ctx context.Context, arg UpdateWishlistParams) (int64, error) {
-	result, err := q.db.Exec(ctx, updateWishlist,
+func (q *Queries) UpdateWishlist(ctx context.Context, arg UpdateWishlistParams) (Wishlist, error) {
+	row := q.db.QueryRow(ctx, updateWishlist,
 		arg.Title,
 		arg.Description,
 		arg.IsPrivate,
 		arg.ID,
 		arg.OwnerID,
 	)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+	var i Wishlist
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.OwnerID,
+		&i.Title,
+		&i.Description,
+		&i.IsPrivate,
+	)
+	return i, err
 }
 
 const updateWishlistItem = `-- name: UpdateWishlistItem :execrows

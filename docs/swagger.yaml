@@ -319,6 +319,25 @@ paths:
       tags:
       - Friends requests
   /api/user/wishlist:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Wishlist ID
+        in: query
+        name: wishlist_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: creates wishlist
+      tags:
+      - User
     patch:
       consumes:
       - application/json
@@ -337,8 +356,10 @@ paths:
       produces:
       - application/json
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.Wishlist'
       security:
       - ApiKeyAuth: []
       summary: creates wishlist

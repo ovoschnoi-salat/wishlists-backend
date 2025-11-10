@@ -3,11 +3,13 @@ package service
 import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 // UpdateWishlist godoc
@@ -19,7 +21,7 @@ import (
 // @Param	wishlist_id	query	int						true	"Wishlist ID"
 // @Param	wishlist	body	CreateWishlistRequest	true	"request body"
 // @Produce	json
-// @Success 204
+// @Success 200 {object} Wishlist
 func (s *Service) UpdateWishlist(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {
@@ -27,7 +29,7 @@ func (s *Service) UpdateWishlist(c *gin.Context) {
 		return
 	}
 
-	wishlistIDRaw := c.Param("wishlist_id")
+	wishlistIDRaw := c.Query("wishlist_id")
 	wishlistID, err := strconv.ParseInt(wishlistIDRaw, 10, 64)
 	if err != nil {
 		c.Error(fmt.Errorf("invalid wishlist_id: %w", err))
@@ -39,7 +41,7 @@ func (s *Service) UpdateWishlist(c *gin.Context) {
 		return
 	}
 
-	count, err := s.db.UpdateWishlist(c, store.UpdateWishlistParams{
+	wishlist, err := s.db.UpdateWishlist(c, store.UpdateWishlistParams{
 		ID:          wishlistID,
 		OwnerID:     authData.User.ID,
 		Title:       req.Title,
@@ -47,12 +49,11 @@ func (s *Service) UpdateWishlist(c *gin.Context) {
 		IsPrivate:   req.IsPrivate,
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			c.AbortWithStatus(http.StatusNotFound)
+		}
 		c.Error(err)
 		c.Status(http.StatusInternalServerError)
-		return
-	}
-	if count == 0 {
-		c.Status(http.StatusNotFound)
 		return
 	}
 
@@ -121,5 +122,5 @@ func (s *Service) UpdateWishlist(c *gin.Context) {
 		}
 	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, mapStoreWishlistToWishlist(wishlist))
 }
