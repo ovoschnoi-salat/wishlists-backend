@@ -70,7 +70,7 @@ services:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     environment:
       PG_DSN: "postgresql://postgres:postgres@wishlists-db:5432/wishlists"
-      PORT: "${BACKEND_PORT}"
+      LISTEN_ADDR: ":${BACKEND_PORT}"
     depends_on:
       - db
     networks:

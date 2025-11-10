@@ -18,7 +18,7 @@ func Logger(c *gin.Context) {
 		latency = latency.Truncate(time.Second)
 	}
 	var event *zerolog.Event
-	if c.Writer.Status() >= 500 {
+	if c.Writer.Status() >= 500 || len(c.Errors) != 0 {
 		event = log.Error()
 	} else {
 		event = log.Info()
@@ -35,7 +35,8 @@ func Logger(c *gin.Context) {
 	}
 	authData := GetInitDataFromContext(c)
 	if authData != nil {
-		event = event.Any("auth_data", authData)
+		event = event.Any("username", authData.User.Username)
+		event = event.Any("user_id", authData.User.ID)
 	}
 	event.Send()
 }

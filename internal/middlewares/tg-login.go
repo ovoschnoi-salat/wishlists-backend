@@ -1,11 +1,13 @@
 package middlewares
 
 import (
+	"backend/internal/config"
 	"backend/internal/store"
 	"context"
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -14,9 +16,9 @@ import (
 
 const initDataCtxKey = "init_data"
 
-func NewTgAuthMiddleware(secretToken string, db *store.Queries) gin.HandlerFunc {
+func NewTgAuthMiddleware(secretToken string, db *store.Queries, stage config.Stage) gin.HandlerFunc {
 	// Define how long since init data generation date init data is valid.
-	//expIn := 10 * time.Minute
+	expIn := 10 * time.Minute
 
 	return func(c *gin.Context) {
 		initData := c.GetHeader("authorization")
@@ -26,10 +28,16 @@ func NewTgAuthMiddleware(secretToken string, db *store.Queries) gin.HandlerFunc 
 			return
 		}
 		initData = strings.TrimPrefix(initData, "tma ")
-		//err := initdata.Validate(strings.TrimPrefix(initData[0], "tma "), secretToken, expIn)
-		//if err != nil {
-		//	return nil, err
-		//}
+
+		if stage == config.PROD {
+			err := initdata.Validate(initData, secretToken, expIn)
+			if err != nil {
+				c.Error(err)
+				c.AbortWithStatus(http.StatusUnauthorized)
+				return
+			}
+		}
+
 		data, err := initdata.Parse(initData)
 		if err != nil {
 			c.Error(err)

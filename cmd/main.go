@@ -1,13 +1,14 @@
 package main
 
 import (
+	"backend/internal/config"
 	"backend/internal/middlewares"
 	"backend/internal/service"
 	"backend/internal/store"
+	"backend/pkg/graceful"
+	"backend/pkg/http"
 	"context"
 	"database/sql"
-	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
+	"github.com/rs/zerolog/log"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -33,23 +35,26 @@ import (
 //	@name		Authorization
 
 func main() {
+	cfg, err := LoadConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("error loading config")
+	}
+
 	ctx := context.Background()
 	dsn := os.Getenv("PG_DSN")
 
 	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("error connecting to database")
 	}
 
 	if err := upMigrations(pool); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("error upgrading migrations")
 	}
 
 	storeObj := store.New(pool)
 
 	serviceObj := service.NewService(storeObj)
-
-	port := os.Getenv("PORT")
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
@@ -63,14 +68,18 @@ func main() {
 		AllowAllOrigins:  true,
 	})) // All origins allowed by default
 
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	if cfg.Stage == config.DEV {
+		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	}
 
-	serviceObj.RegisterHandlers(router.Group("", middlewares.NewTgAuthMiddleware("", storeObj)))
+	serviceObj.RegisterHandlers(router.Group("", middlewares.NewTgAuthMiddleware("", storeObj, cfg.Stage)))
 
-	log.Printf("server listening at :%s", port)
-	err = http.ListenAndServe(":"+port, router)
+	httpServer := http.NewServer(cfg.HttpServer, router)
+
+	runner := graceful.DefaultConfig().GetRunner()
+	err = runner.Run(httpServer)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatal().Err(err).Msg("error running app")
 	}
 }
 
@@ -80,7 +89,7 @@ func upMigrations(pool *pgxpool.Pool) error {
 	defer func(db *sql.DB) {
 		err := db.Close()
 		if err != nil {
-			log.Println("error closing db: ", err)
+			log.Error().Err(err).Msg("error closing db")
 		}
 	}(db)
 

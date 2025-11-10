@@ -68,7 +68,7 @@ loki.process "logs_parse" {
     selector = "{service_name=\"wishlists-backend\"}"
 
     stage.json {
-      expressions = { "level" = "" , "status" = "", "method" = "", "pattern" = "", "username" = "auth_data.user.username", errors = ""}
+      expressions = { "level" = "" , "status" = "", "method" = "", "pattern" = "", "username" = "", "user_id" = "", errors = ""}
     }
 
     stage.labels {
@@ -82,6 +82,7 @@ loki.process "logs_parse" {
 
     stage.structured_metadata {
       values = {
+        user_id = "",
         username = "",
         errors = "",
       }
