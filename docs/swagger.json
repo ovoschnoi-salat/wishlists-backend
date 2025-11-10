@@ -422,6 +422,42 @@
                 }
             }
         },
+        "/api/user/wishlist/access": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "returns wishlist access list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wishlist ID",
+                        "name": "wishlist_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/wishlist/item": {
             "get": {
                 "security": [

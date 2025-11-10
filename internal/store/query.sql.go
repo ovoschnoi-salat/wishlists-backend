@@ -516,11 +516,16 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 const getWishlistAccessList = `-- name: GetWishlistAccessList :many
 SELECT list_id, user_id, owner_id, created_at
 FROM wishlist_access_list
-WHERE list_id = $1
+WHERE list_id = $1 AND owner_id = $2
 `
 
-func (q *Queries) GetWishlistAccessList(ctx context.Context, listID int64) ([]WishlistAccessList, error) {
-	rows, err := q.db.Query(ctx, getWishlistAccessList, listID)
+type GetWishlistAccessListParams struct {
+	ListID  int64 `json:"list_id"`
+	OwnerID int64 `json:"owner_id"`
+}
+
+func (q *Queries) GetWishlistAccessList(ctx context.Context, arg GetWishlistAccessListParams) ([]WishlistAccessList, error) {
+	rows, err := q.db.Query(ctx, getWishlistAccessList, arg.ListID, arg.OwnerID)
 	if err != nil {
 		return nil, err
 	}

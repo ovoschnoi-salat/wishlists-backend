@@ -166,7 +166,7 @@ WHERE id = $1
 -- name: GetWishlistAccessList :many
 SELECT *
 FROM wishlist_access_list
-WHERE list_id = $1;
+WHERE list_id = $1 AND owner_id = $2;
 
 -- name: InsertWishlistAccessItem :execrows
 INSERT INTO wishlist_access_list (list_id, owner_id, user_id)

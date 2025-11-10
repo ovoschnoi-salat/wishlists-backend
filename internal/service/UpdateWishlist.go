@@ -57,7 +57,10 @@ func (s *Service) UpdateWishlist(c *gin.Context) {
 	}
 
 	if req.IsPrivate {
-		accessList, err := s.db.GetWishlistAccessList(c, wishlistID)
+		accessList, err := s.db.GetWishlistAccessList(c, store.GetWishlistAccessListParams{
+			ListID:  wishlistID,
+			OwnerID: authData.User.ID,
+		})
 		if err != nil {
 			c.Error(err)
 			c.Status(http.StatusInternalServerError)

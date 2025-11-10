@@ -366,6 +366,28 @@ paths:
       summary: creates wishlist
       tags:
       - User
+  /api/user/wishlist/access:
+    get:
+      parameters:
+      - description: Wishlist ID
+        in: query
+        name: wishlist_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: number
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: returns wishlist access list
+      tags:
+      - User
   /api/user/wishlist/item:
     get:
       parameters:
