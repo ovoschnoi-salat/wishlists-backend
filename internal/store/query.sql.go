@@ -713,6 +713,21 @@ func (q *Queries) ReserveWishlistItem(ctx context.Context, arg ReserveWishlistIt
 	return result.RowsAffected(), nil
 }
 
+const resetWishlistItemReservation = `-- name: ResetWishlistItemReservation :execrows
+UPDATE wishlist_items
+SET updated_at  = now(),
+    reserved_by = NULL
+WHERE id = $1
+`
+
+func (q *Queries) ResetWishlistItemReservation(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.Exec(ctx, resetWishlistItemReservation, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const unreserveWishlistItem = `-- name: UnreserveWishlistItem :execrows
 UPDATE wishlist_items
 SET updated_at  = now(),
@@ -774,7 +789,7 @@ func (q *Queries) UpdateWishlist(ctx context.Context, arg UpdateWishlistParams) 
 	return i, err
 }
 
-const updateWishlistItem = `-- name: UpdateWishlistItem :execrows
+const updateWishlistItem = `-- name: UpdateWishlistItem :one
 UPDATE wishlist_items
 SET updated_at  = now(),
     title       = $1,
@@ -784,6 +799,7 @@ SET updated_at  = now(),
     reservable  = $5
 WHERE id = $6
   AND owner_id = $7
+RETURNING id, created_at, updated_at, owner_id, wishlist_id, title, description, price, links, reservable, reserved_by
 `
 
 type UpdateWishlistItemParams struct {
@@ -796,8 +812,8 @@ type UpdateWishlistItemParams struct {
 	OwnerID     int64  `json:"owner_id"`
 }
 
-func (q *Queries) UpdateWishlistItem(ctx context.Context, arg UpdateWishlistItemParams) (int64, error) {
-	result, err := q.db.Exec(ctx, updateWishlistItem,
+func (q *Queries) UpdateWishlistItem(ctx context.Context, arg UpdateWishlistItemParams) (WishlistItem, error) {
+	row := q.db.QueryRow(ctx, updateWishlistItem,
 		arg.Title,
 		arg.Description,
 		arg.Price,
@@ -806,8 +822,19 @@ func (q *Queries) UpdateWishlistItem(ctx context.Context, arg UpdateWishlistItem
 		arg.ID,
 		arg.OwnerID,
 	)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+	var i WishlistItem
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.OwnerID,
+		&i.WishlistID,
+		&i.Title,
+		&i.Description,
+		&i.Price,
+		&i.Links,
+		&i.Reservable,
+		&i.ReservedBy,
+	)
+	return i, err
 }

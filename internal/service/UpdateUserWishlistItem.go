@@ -4,6 +4,7 @@ import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -18,7 +19,7 @@ import (
 // @Accept	json
 // @Param	item_id	query	int							true	"Item ID"
 // @Param	item	body	CreateWishlistItemRequest	true	"Item"true "request body"
-// @Success	204
+// @Success 200 {object} WishlistItem
 func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {
@@ -50,7 +51,7 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 	}
 
 	// Update the wishlist item
-	count, err := s.db.UpdateWishlistItem(c, store.UpdateWishlistItemParams{
+	wishlistItem, err := s.db.UpdateWishlistItem(c, store.UpdateWishlistItemParams{
 		ID:          itemID,
 		OwnerID:     authData.User.ID,
 		Title:       req.Title,
@@ -64,9 +65,20 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	if count == 0 {
-		c.Status(http.StatusNotFound)
+
+	if !wishlistItem.Reservable && wishlistItem.ReservedBy.Int64 != 0 {
+		count, err := s.db.ResetWishlistItemReservation(c, wishlistItem.ID)
+		if err != nil {
+			c.Error(err)
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+		if count == 0 {
+			c.Error(fmt.Errorf("error resetting Wishlist item reservation for item %d", wishlistItem.ID))
+			c.Status(http.StatusInternalServerError)
+			return
+		}
 	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, mapStoreWishlistItemToWishlistItem(wishlistItem))
 }

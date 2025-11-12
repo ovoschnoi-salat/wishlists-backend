@@ -445,8 +445,10 @@ paths:
         schema:
           $ref: '#/definitions/service.CreateWishlistItemRequest'
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.WishlistItem'
       security:
       - ApiKeyAuth: []
       summary: updates a wishlist item

@@ -108,7 +108,7 @@ INSERT INTO wishlist_items (wishlist_id, owner_id, title, description, price, li
 VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
--- name: UpdateWishlistItem :execrows
+-- name: UpdateWishlistItem :one
 UPDATE wishlist_items
 SET updated_at  = now(),
     title       = $1,
@@ -117,7 +117,14 @@ SET updated_at  = now(),
     links       = $4,
     reservable  = $5
 WHERE id = $6
-  AND owner_id = $7;
+  AND owner_id = $7
+RETURNING *;
+
+-- name: ResetWishlistItemReservation :execrows
+UPDATE wishlist_items
+SET updated_at  = now(),
+    reserved_by = NULL
+WHERE id = $1;
 
 -- name: CheckUserHasAccessToPrivateWishlist :one
 SELECT *

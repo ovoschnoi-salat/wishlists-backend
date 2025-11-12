@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// UpdateWishlist godoc
+// UpdateUserWishlist godoc
 // @Summary creates wishlist
 // @Tags User
 // @Router /api/user/wishlist [patch]
@@ -22,7 +22,7 @@ import (
 // @Param	wishlist	body	CreateWishlistRequest	true	"request body"
 // @Produce	json
 // @Success 200 {object} Wishlist
-func (s *Service) UpdateWishlist(c *gin.Context) {
+func (s *Service) UpdateUserWishlist(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {
 		c.AbortWithStatus(http.StatusUnauthorized)

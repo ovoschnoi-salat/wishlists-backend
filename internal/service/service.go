@@ -23,7 +23,7 @@ func (s *Service) RegisterHandlers(g *gin.RouterGroup) {
 
 	g.GET("/user/wishlists", s.GetUserWishlists)
 	g.POST("/user/wishlist", s.CreateWishlist)
-	g.PATCH("/user/wishlist", s.UpdateWishlist)
+	g.PATCH("/user/wishlist", s.UpdateUserWishlist)
 	g.DELETE("/user/wishlist", s.DeleteWishlist)
 
 	g.GET("/user/wishlist/items", s.GetUserWishlistItems)
