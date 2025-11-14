@@ -4,6 +4,7 @@ import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,18 +29,17 @@ func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 	friendUsernameStr := c.Query("username")
 
 	if authData.User.Username == friendUsernameStr {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send friend request to yourself"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("cannot send friend request to yourself"))
 		return
 	}
 
 	friend, err := s.db.GetUserByUsername(c, friendUsernameStr)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			c.AbortWithError(http.StatusNotFound, fmt.Errorf("user not found: %w", err))
 			return
 		}
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("cannot get user by username: %w", err))
 		return
 	}
 
@@ -48,13 +48,11 @@ func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 		UserIDTo:   friend.ID,
 	})
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error creating friendship: %w", err))
 		return
 	}
 	if count < 1 {
-		c.Error(errors.New("no rows updated"))
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, errors.New("error creating friendship: no rows updated"))
 		return
 	}
 

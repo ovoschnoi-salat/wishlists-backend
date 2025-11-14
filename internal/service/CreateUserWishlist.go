@@ -37,6 +37,7 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 	if err != nil {
 		return
 	}
+
 	wishlist, err := s.db.CreateWishlist(c, store.CreateWishlistParams{
 		OwnerID:     authData.User.ID,
 		Title:       req.Title,
@@ -44,8 +45,7 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 		IsPrivate:   req.IsPrivate,
 	})
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error creating wishlist: %w", err))
 		return
 	}
 
@@ -57,7 +57,7 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 				UserID:  UserID,
 			})
 			if err != nil {
-				c.Error(err)
+				c.Error(fmt.Errorf("error inserting wishlist access item: %w", err))
 			} else if count == 0 {
 				c.Error(fmt.Errorf("error inserting wishlist access item: not inserted id %d", UserID))
 			}

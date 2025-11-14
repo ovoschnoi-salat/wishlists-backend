@@ -4,6 +4,7 @@ import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -49,21 +50,18 @@ func (s *Service) CreateUserWishlistItem(c *gin.Context) {
 		return
 	}
 
-	// Parse request body
 	req := new(CreateWishlistItemRequest)
 	if err := c.BindJSON(req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
 		return
 	}
 
-	// Convert links to JSON bytes
 	linksJSON, err := json.Marshal(req.Links)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid links format"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid links format: %w", err))
 		return
 	}
 
-	// Create the wishlist item
 	item, err := s.db.CreateWishlistItem(c, store.CreateWishlistItemParams{
 		WishlistID:  req.WishlistID,
 		OwnerID:     authData.User.ID,
@@ -74,8 +72,7 @@ func (s *Service) CreateUserWishlistItem(c *gin.Context) {
 		Reservable:  req.Reservable,
 	})
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error creating item: %w", err))
 		return
 	}
 

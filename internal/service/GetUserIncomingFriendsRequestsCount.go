@@ -2,6 +2,7 @@ package service
 
 import (
 	"backend/internal/middlewares"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,8 +28,7 @@ func (s *Service) GetUserIncomingFriendsRequestsCount(c *gin.Context) {
 
 	count, err := s.db.GetIncomingFriendsRequestsCount(c, authData.User.ID)
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to get incoming friend requests count: %w", err))
 		return
 	}
 	c.JSON(http.StatusOK, IncomingFriendsRequestsCountResponse{count})

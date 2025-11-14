@@ -12,7 +12,8 @@ WHERE username = $1;
 INSERT INTO users (id, username, name, photo_url)
 VALUES ($1, $2, $3, $4);
 
--- name: GetWishlists :many
+
+-- name: GetUserWishlists :many
 SELECT *
 FROM wishlists
 WHERE owner_id = $1;
@@ -86,8 +87,9 @@ FROM friends_requests
 WHERE user_id_to = $1
   AND user_id_from = $2;
 
+
 -- name: CheckIfFriends :one
-SELECT *
+SELECT count(*)
 FROM friends
 WHERE user_id = $1
   AND friend_id = $2;
@@ -97,6 +99,20 @@ SELECT *
 FROM wishlist_items
 WHERE wishlist_id = $1
   and owner_id = $2;
+
+-- name: GetFriendWishlistItems :many
+SELECT *
+FROM wishlist_items
+WHERE wishlist_id = $1
+  AND EXISTS(SELECT *
+             FROM wishlists
+             WHERE wishlists.id = $1
+               AND EXISTS(SELECT * from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
+               AND (wishlists.is_private = false OR
+                    EXISTS(SELECT *
+                           FROM wishlist_access_list
+                           WHERE wishlist_access_list.list_id = $1
+                             AND wishlist_access_list.user_id = $2)));
 
 -- name: GetWishlistItem :one
 SELECT *
@@ -126,6 +142,12 @@ SET updated_at  = now(),
     reserved_by = NULL
 WHERE id = $1;
 
+-- name: ResetWishlistItemsReservationsForFriend :execrows
+UPDATE wishlist_items
+SET updated_at  = now(),
+    reserved_by = $2
+WHERE owner_id = $1;
+
 -- name: CheckUserHasAccessToPrivateWishlist :one
 SELECT *
 FROM wishlist_access_list
@@ -136,15 +158,33 @@ WHERE list_id = $1
 UPDATE wishlist_items
 SET updated_at  = now(),
     reserved_by = $2
-WHERE id = $1
-  AND reserved_by IS NULL;
+WHERE wishlist_items.id = $1
+  AND wishlist_items.reserved_by IS NULL
+  AND EXISTS(SELECT *
+             FROM wishlists
+             WHERE wishlists.id = wishlist_items.wishlist_id
+               AND EXISTS(SELECT * from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
+               AND (wishlists.is_private = false OR
+                    EXISTS(SELECT *
+                           FROM wishlist_access_list
+                           WHERE wishlist_access_list.list_id = $1
+                             AND wishlist_access_list.user_id = $2)));
 
--- name: UnreserveWishlistItem :execrows
+-- name: CancelWishlistItemReservation :execrows
 UPDATE wishlist_items
 SET updated_at  = now(),
     reserved_by = NULL
-WHERE id = $1
-  AND reserved_by = $2;
+WHERE wishlist_items.id = $1
+  AND wishlist_items.reserved_by = $2
+  AND EXISTS(SELECT *
+             FROM wishlists
+             WHERE wishlists.id = wishlist_items.wishlist_id
+               AND EXISTS(SELECT * from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
+               AND (wishlists.is_private = false OR
+                    EXISTS(SELECT *
+                           FROM wishlist_access_list
+                           WHERE wishlist_access_list.list_id = $1
+                             AND wishlist_access_list.user_id = $2)));
 
 -- name: DeleteWishlistItem :execrows
 DELETE
@@ -157,7 +197,8 @@ SELECT *
 FROM wishlists
 WHERE wishlists.owner_id = $1
   AND (is_private = false OR
-       id IN (SELECT list_id FROM wishlist_access_list WHERE wishlist_access_list.owner_id = $1 AND user_id = $2));
+       id IN (SELECT list_id FROM wishlist_access_list WHERE wishlist_access_list.owner_id = $1 AND wishlist_access_list.user_id = $2))
+  AND EXISTS(SELECT * from friends where friends.user_id = $1 AND friends.friend_id = $2);
 
 -- name: GetWishlistByWishId :one
 SELECT *
@@ -165,23 +206,33 @@ FROM wishlists
 WHERE wishlists.id = (SELECT wishlist_id FROM wishlist_items WHERE wishlist_items.id = $1);
 
 -- name: CheckIfUserHasAccessToWishlist :one
-SELECT id
+SELECT count(*)
 FROM wishlists
-WHERE id = $1
-  AND (is_private = false OR
-       id IN (SELECT list_id FROM wishlist_access_list WHERE wishlist_access_list.list_id = $1 AND user_id = $2));
+WHERE wishlists.id = $1
+  AND EXISTS(SELECT * from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
+  AND (wishlists.is_private = false OR
+       EXISTS(SELECT *
+              FROM wishlist_access_list
+              WHERE wishlist_access_list.list_id = $1
+                AND wishlist_access_list.user_id = $2));
 
 -- name: GetWishlistAccessList :many
 SELECT *
 FROM wishlist_access_list
-WHERE list_id = $1 AND owner_id = $2;
+WHERE list_id = $1
+  AND owner_id = $2;
 
 -- name: InsertWishlistAccessItem :execrows
 INSERT INTO wishlist_access_list (list_id, owner_id, user_id)
 VALUES ($1, $2, $3);
 
 -- name: DeleteWishlistAccessItem :execrows
-DELETE from wishlist_access_list WHERE list_id = $1 AND user_id = $2;
+DELETE
+from wishlist_access_list
+WHERE list_id = $1
+  AND user_id = $2;
 
 -- name: DeleteWishlistAccessItems :exec
-DELETE from wishlist_access_list WHERE list_id = $1;
+DELETE
+from wishlist_access_list
+WHERE list_id = $1;

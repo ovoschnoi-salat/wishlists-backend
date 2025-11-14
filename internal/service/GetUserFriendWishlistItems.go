@@ -4,12 +4,11 @@ import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
 )
 
 type FriendWishlistItem struct {
@@ -39,37 +38,19 @@ func (s *Service) GetUserFriendWishlistItems(c *gin.Context) {
 		return
 	}
 
-	// Get wishlist ID from URL parameter
 	wishlistIDStr := c.Query("wishlist_id")
 	wishlistID, err := strconv.ParseInt(wishlistIDStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid wishlist ID"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid wishlist ID: %w", err))
 		return
 	}
 
-	_, err = s.db.CheckIfUserHasAccessToWishlist(c, store.CheckIfUserHasAccessToWishlistParams{
-		ID:     wishlistID,
-		UserID: authData.User.ID,
-	})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			c.Status(http.StatusNotFound)
-			return
-		}
-
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-
-	// Get wishlist items
-	items, err := s.db.GetWishlistItems(c, store.GetWishlistItemsParams{
+	items, err := s.db.GetFriendWishlistItems(c, store.GetFriendWishlistItemsParams{
 		WishlistID: wishlistID,
-		OwnerID:    authData.User.ID,
+		FriendID:   authData.User.ID,
 	})
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error getting friend wishlist items: %w", err))
 		return
 	}
 

@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -21,7 +22,7 @@ type FriendWishlist struct {
 // @Security ApiKeyAuth
 // @Param friend_id query int true "Friend ID"
 // @Produce json
-// @Success 200 {array} FriendWishlist
+// @Success 200 {array} Wishlist
 func (s *Service) GetUserFriendWishlists(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {
@@ -29,11 +30,10 @@ func (s *Service) GetUserFriendWishlists(c *gin.Context) {
 		return
 	}
 
-	// Get wishlist ID from URL parameter
 	friendIDStr := c.Query("friend_id")
 	friendID, err := strconv.ParseInt(friendIDStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid friend ID"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid friend ID: %w", err))
 		return
 	}
 
@@ -42,24 +42,8 @@ func (s *Service) GetUserFriendWishlists(c *gin.Context) {
 		UserID:  authData.User.ID,
 	})
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to get friend wishlists: %w", err))
 		return
 	}
-	c.JSON(http.StatusOK, mapStoreWishlistsToFriendWishlists(wishlists))
-}
-
-func mapStoreWishlistsToFriendWishlists(wishlists []store.Wishlist) []FriendWishlist {
-	res := make([]FriendWishlist, len(wishlists))
-	for i, u := range wishlists {
-		res[i] = mapStoreWishlistToFriendWishlists(u)
-	}
-	return res
-}
-
-func mapStoreWishlistToFriendWishlists(wishlist store.Wishlist) FriendWishlist {
-	return FriendWishlist{
-		ID:    wishlist.ID,
-		Title: wishlist.Title,
-	}
+	c.JSON(http.StatusOK, mapStoreWishlistsToWishlists(wishlists))
 }

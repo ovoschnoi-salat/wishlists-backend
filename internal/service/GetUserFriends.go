@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,8 +32,7 @@ func (s *Service) GetFriends(c *gin.Context) {
 
 	friends, err := s.db.GetFriends(c, authData.User.ID)
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error getting friends: %w", err))
 		return
 	}
 	c.JSON(http.StatusOK, mapStoreUsersToFriends(friends))

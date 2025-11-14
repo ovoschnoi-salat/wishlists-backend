@@ -32,8 +32,8 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 	wishlistIDRaw := c.Query("wishlist_id")
 	wishlistID, err := strconv.ParseInt(wishlistIDRaw, 10, 64)
 	if err != nil {
-		c.Error(fmt.Errorf("invalid wishlist_id: %w", err))
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid wishlist_id: %w", err))
+		return
 	}
 
 	req := new(CreateWishlistRequest)
@@ -50,10 +50,10 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			c.AbortWithStatus(http.StatusNotFound)
+			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("can' update wishlist %s: %w", wishlistIDRaw, err))
+			return
 		}
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -63,8 +63,7 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 			OwnerID: authData.User.ID,
 		})
 		if err != nil {
-			c.Error(err)
-			c.Status(http.StatusInternalServerError)
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 		usersWithAccessOld := make(map[int64]struct{}, len(accessList))
@@ -83,13 +82,11 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 					UserID: userID,
 				})
 				if err != nil {
-					c.Error(err)
-					c.Status(http.StatusInternalServerError)
+					c.AbortWithError(http.StatusInternalServerError, err)
 					return
 				}
 				if count == 0 {
-					c.Error(fmt.Errorf("error deleting access for user %d", userID))
-					c.Status(http.StatusInternalServerError)
+					c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error deleting access for user %d", userID))
 					return
 				}
 			}
@@ -102,13 +99,11 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 					UserID:  userID,
 				})
 				if err != nil {
-					c.Error(err)
-					c.Status(http.StatusInternalServerError)
+					c.AbortWithError(http.StatusInternalServerError, err)
 					return
 				}
 				if count == 0 {
-					c.Error(fmt.Errorf("error inserting access for user %d", userID))
-					c.Status(http.StatusInternalServerError)
+					c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error inserting access for user %d", userID))
 					return
 				}
 			}
@@ -116,8 +111,7 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 	} else {
 		err := s.db.DeleteWishlistAccessItems(c, wishlistID)
 		if err != nil {
-			c.Error(err)
-			c.Status(http.StatusInternalServerError)
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 	}

@@ -2,6 +2,7 @@ package service
 
 import (
 	"backend/internal/middlewares"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,8 +24,7 @@ func (s *Service) GetUserIncomingFriendsRequests(c *gin.Context) {
 
 	requests, err := s.db.GetIncomingFriendsRequests(c, authData.User.ID)
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to get incoming friend requests: %w", err))
 		return
 	}
 	c.JSON(http.StatusOK, mapStoreUsersToFriends(requests))

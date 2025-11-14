@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -24,11 +25,10 @@ func (s *Service) GetUserWishlistAccessList(c *gin.Context) {
 		return
 	}
 
-	// Get wishlist ID from URL parameter
 	wishlistIDStr := c.Query("wishlist_id")
 	wishlistID, err := strconv.ParseInt(wishlistIDStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid wishlist ID"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid wishlist ID: %w", err))
 		return
 	}
 
@@ -37,8 +37,7 @@ func (s *Service) GetUserWishlistAccessList(c *gin.Context) {
 		OwnerID: authData.User.ID,
 	})
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to get access list: %w", err))
 		return
 	}
 

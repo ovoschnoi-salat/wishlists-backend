@@ -239,7 +239,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/service.FriendWishlist"
+                                "$ref": "#/definitions/service.Wishlist"
                             }
                         }
                     }
@@ -732,17 +732,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "service.FriendWishlist": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "title": {
                     "type": "string"
                 }
             }

@@ -4,6 +4,7 @@ import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -24,26 +25,23 @@ func (s *Service) DenyUserIncomingFriendsRequest(c *gin.Context) {
 		return
 	}
 
-	// Get friend ID from URL parameter
 	friendIDStr := c.Query("friend_id")
 	friendID, err := strconv.ParseInt(friendIDStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid friend ID"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid friend ID: %w", err))
 		return
 	}
 
-	// Accept the friend request
 	count, err := s.db.DenyFriendsRequest(c, store.DenyFriendsRequestParams{
 		UserIDFrom: friendID,
 		UserIDTo:   authData.User.ID,
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("cannot deny friend request: %w", err))
 		return
 	}
 	if count < 1 {
-		c.Error(errors.New("no rows updated"))
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot deny friend request: no rows updated"))
 		return
 	}
 

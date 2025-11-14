@@ -4,6 +4,7 @@ import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -24,15 +25,13 @@ func (s *Service) AcceptUserIncomingFriendsRequest(c *gin.Context) {
 		return
 	}
 
-	// Get friend ID from URL parameter
 	friendIDStr := c.Query("friend_id")
 	friendID, err := strconv.ParseInt(friendIDStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid friend ID"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Invalid friend ID: %w", err))
 		return
 	}
 
-	// Accept the friend request
 	count, err := s.db.AcceptFriendsRequest(c, store.AcceptFriendsRequestParams{
 		UserIDFrom: friendID,
 		UserIDTo:   authData.User.ID,
@@ -42,8 +41,7 @@ func (s *Service) AcceptUserIncomingFriendsRequest(c *gin.Context) {
 		return
 	}
 	if count < 1 {
-		c.Error(errors.New("no rows updated"))
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, errors.New("no rows updated"))
 		return
 	}
 

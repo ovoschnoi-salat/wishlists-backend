@@ -4,11 +4,13 @@ import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 // UpdateUserWishlistItem godoc
@@ -28,10 +30,10 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 	}
 
 	// Get item ID from URL parameter
-	itemIDStr := c.Query("item_id")
-	itemID, err := strconv.ParseInt(itemIDStr, 10, 64)
+	itemIDRaw := c.Query("item_id")
+	itemID, err := strconv.ParseInt(itemIDRaw, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid item_id: %s", itemIDRaw))
 		return
 	}
 
@@ -39,14 +41,14 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 	req := new(CreateWishlistItemRequest)
 	err = c.BindJSON(req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid request body: %s", err))
 		return
 	}
 
 	// Convert links to JSON bytes
 	linksJSON, err := json.Marshal(req.Links)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid links format"})
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid link format: %s", err))
 		return
 	}
 
@@ -61,21 +63,22 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 		Reservable:  req.Reservable,
 	})
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		if errors.Is(err, pgx.ErrNoRows) {
+			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("wish %s cannot be updated: %w", itemIDRaw, err))
+			return
+		}
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error updating wishlist item: %w", err))
 		return
 	}
 
 	if !wishlistItem.Reservable && wishlistItem.ReservedBy.Int64 != 0 {
 		count, err := s.db.ResetWishlistItemReservation(c, wishlistItem.ID)
 		if err != nil {
-			c.Error(err)
-			c.Status(http.StatusInternalServerError)
+			c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error resetting wishlist item reservationfor item %d: %w", wishlistItem.ID, err))
 			return
 		}
 		if count == 0 {
-			c.Error(fmt.Errorf("error resetting Wishlist item reservation for item %d", wishlistItem.ID))
-			c.Status(http.StatusInternalServerError)
+			c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error resetting wishlist item reservation for item %d", wishlistItem.ID))
 			return
 		}
 	}

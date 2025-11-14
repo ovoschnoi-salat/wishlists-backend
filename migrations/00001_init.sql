@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS wishlists
     is_private  BOOLEAN   NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS wishlists_owner_id_from_idx ON wishlists (owner_id);
+
 CREATE TABLE IF NOT EXISTS wishlist_access_list
 (
     list_id    BIGINT    NOT NULL REFERENCES wishlists (id) ON DELETE CASCADE,
@@ -67,6 +69,10 @@ CREATE TABLE IF NOT EXISTS wishlist_items
     reservable  BOOLEAN   NOT NULL,
     reserved_by BIGINT    REFERENCES users (id) ON DELETE SET NULL
 );
+
+CREATE INDEX IF NOT EXISTS wishlists_items_owner_id_from_idx ON wishlist_items (owner_id);
+
+CREATE INDEX IF NOT EXISTS wishlist_items_wishlist_id_idx ON wishlist_items (wishlist_id);
 
 -- +goose StatementEnd
 

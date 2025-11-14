@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,10 +30,9 @@ func (s *Service) GetUserWishlists(c *gin.Context) {
 		return
 	}
 
-	wishlists, err := s.db.GetWishlists(c, authData.User.ID)
+	wishlists, err := s.db.GetUserWishlists(c, authData.User.ID)
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error getting wishlists: %w", err))
 		return
 	}
 	c.JSON(http.StatusOK, mapStoreWishlistsToWishlists(wishlists))

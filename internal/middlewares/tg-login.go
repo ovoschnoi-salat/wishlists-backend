@@ -5,6 +5,7 @@ import (
 	"backend/internal/store"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -23,8 +24,7 @@ func NewTgAuthMiddleware(secretToken string, db *store.Queries, stage config.Sta
 	return func(c *gin.Context) {
 		initData := c.GetHeader("authorization")
 		if len(initData) == 0 || !strings.HasPrefix(initData, "tma") || len(strings.TrimPrefix(initData, "tma ")) == 0 {
-			c.Error(errors.New("no init data found"))
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithError(http.StatusUnauthorized, errors.New("no init data found"))
 			return
 		}
 		initData = strings.TrimPrefix(initData, "tma ")
@@ -32,16 +32,14 @@ func NewTgAuthMiddleware(secretToken string, db *store.Queries, stage config.Sta
 		if stage == config.PROD {
 			err := initdata.Validate(initData, secretToken, expIn)
 			if err != nil {
-				c.Error(err)
-				c.AbortWithStatus(http.StatusUnauthorized)
+				c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("error validating init data: %w", err))
 				return
 			}
 		}
 
 		data, err := initdata.Parse(initData)
 		if err != nil {
-			c.Error(err)
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("error parsing init data: %w", err))
 			return
 		}
 		_, err = db.GetUser(c, data.User.ID)
@@ -53,18 +51,15 @@ func NewTgAuthMiddleware(secretToken string, db *store.Queries, stage config.Sta
 				PhotoUrl: data.User.PhotoURL,
 			})
 			if err != nil {
-				c.Error(err)
-				c.AbortWithStatus(http.StatusInternalServerError)
+				c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error creating user: %w", err))
 				return
 			}
 			if count == 0 {
-				c.Error(errors.New("can't create new user"))
-				c.AbortWithStatus(http.StatusInternalServerError)
+				c.AbortWithError(http.StatusInternalServerError, errors.New("can't create new user"))
 			}
 		}
 		if err != nil {
-			c.Error(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
+			c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error getting user: %w", err))
 			return
 		}
 		c.Set(initDataCtxKey, &data)

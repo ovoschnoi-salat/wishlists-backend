@@ -40,13 +40,6 @@ definitions:
       username:
         type: string
     type: object
-  service.FriendWishlist:
-    properties:
-      id:
-        type: integer
-      title:
-        type: string
-    type: object
   service.FriendWishlistItem:
     properties:
       description:
@@ -249,7 +242,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/service.FriendWishlist'
+              $ref: '#/definitions/service.Wishlist'
             type: array
       security:
       - ApiKeyAuth: []

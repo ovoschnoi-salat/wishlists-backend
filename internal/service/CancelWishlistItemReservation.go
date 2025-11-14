@@ -12,14 +12,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-// ReserveFriendWish godoc
+// CancelFriendWishReservation godoc
 // @Summary		reserves friend's wish
 // @Tags		Friend's Wish
-// @Router		/api/user/friend/wishlist/wish/reservation/reserve [post]
+// @Router		/api/user/friend/wishlist/wish/reservation/cancel [post]
 // @Security	ApiKeyAuth
-// @Param		wish_id query int true "Wish ID"
+// @Param		wish_id	query	int	true	"Wish ID"
 // @Success		204
-func (s *Service) ReserveFriendWish(c *gin.Context) {
+func (s *Service) CancelFriendWishReservation(c *gin.Context) {
 	authData := middlewares.GetInitDataFromContext(c)
 	if authData == nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -33,16 +33,16 @@ func (s *Service) ReserveFriendWish(c *gin.Context) {
 		return
 	}
 
-	count, err := s.db.ReserveWishlistItem(c, store.ReserveWishlistItemParams{
+	count, err := s.db.CancelWishlistItemReservation(c, store.CancelWishlistItemReservationParams{
 		ID:         wishID,
 		ReservedBy: pgtype.Int8{Int64: authData.User.ID, Valid: true},
 	})
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error reserving wishlist: %w", err))
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error cancelling reservation: %w", err))
 		return
 	}
 	if count < 1 {
-		c.AbortWithError(http.StatusBadRequest, errors.New("wish cannot be reserved"))
+		c.AbortWithError(http.StatusBadRequest, errors.New("wish reservation cannot be cancelled"))
 		return
 	}
 

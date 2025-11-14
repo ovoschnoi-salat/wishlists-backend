@@ -3,6 +3,7 @@ package service
 import (
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -29,8 +30,7 @@ func (s *Service) DeleteWishlist(c *gin.Context) {
 	wishlistIDRaw := c.Query("wishlist_id")
 	wishlistID, err := strconv.ParseInt(wishlistIDRaw, 10, 64)
 	if err != nil {
-		c.Error(fmt.Errorf("invalid wishlist_id: %w", err))
-		c.AbortWithStatus(http.StatusBadRequest)
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid wishlist_id: %w", err))
 	}
 
 	count, err := s.db.DeleteWishlist(c, store.DeleteWishlistParams{
@@ -38,12 +38,11 @@ func (s *Service) DeleteWishlist(c *gin.Context) {
 		OwnerID: authData.User.ID,
 	})
 	if err != nil {
-		c.Error(err)
-		c.Status(http.StatusInternalServerError)
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error deleting wishlist: %w", err))
 		return
 	}
 	if count == 0 {
-		c.Status(http.StatusNotFound)
+		c.AbortWithError(http.StatusBadRequest, errors.New("wishlist not found"))
 		return
 	}
 
