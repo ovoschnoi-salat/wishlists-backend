@@ -9,8 +9,17 @@ FROM users
 WHERE username = $1;
 
 -- name: CreateUser :one
-INSERT INTO users (id, username, name, photo_url, displayed_name)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO users (id, username, photo_url, displayed_name)
+VALUES ($1, $2, $3, $4)
+RETURNING *;
+
+-- name: UpdateUser :one
+UPDATE users
+SET updated_at       = now(),
+    displayed_name   = $2,
+    photo_url        = $3,
+    open_to_requests = $4
+WHERE id = $1
 RETURNING *;
 
 
@@ -120,6 +129,11 @@ SELECT *
 FROM wishlist_items
 WHERE id = $1;
 
+-- name: GetUserWishlistItem :one
+SELECT *
+FROM wishlist_items
+WHERE id = $1 AND owner_id = $2;
+
 -- name: CreateWishlistItem :one
 INSERT INTO wishlist_items (wishlist_id, owner_id, title, description, price, links, reservable)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -198,7 +212,9 @@ SELECT *
 FROM wishlists
 WHERE wishlists.owner_id = $1
   AND (is_private = false OR
-       id IN (SELECT list_id FROM wishlist_access_list WHERE wishlist_access_list.owner_id = $1 AND wishlist_access_list.user_id = $2))
+       id IN (SELECT list_id
+              FROM wishlist_access_list
+              WHERE wishlist_access_list.owner_id = $1 AND wishlist_access_list.user_id = $2))
   AND EXISTS(SELECT * from friends where friends.user_id = $1 AND friends.friend_id = $2);
 
 -- name: GetWishlistByWishId :one

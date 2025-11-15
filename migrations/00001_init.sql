@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS users
 (
     id               BIGINT PRIMARY KEY,
     created_at       TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMP NOT NULL DEFAULT NOW(),
     username         TEXT      NOT NULL,
-    name             TEXT,
     displayed_name   TEXT      NOT NULL,
     photo_url        TEXT      NOT NULL,
 --     language         TEXT      NOT NULL,

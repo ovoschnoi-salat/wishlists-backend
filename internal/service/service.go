@@ -21,6 +21,8 @@ func NewService(db *store.Queries) *Service {
 func (s *Service) RegisterHandlers(g *gin.RouterGroup) {
 	g = g.Group("/api")
 
+	g.PATCH("/user", s.UpdateUser)
+
 	g.GET("/user/wishlists", s.GetUserWishlists)
 	g.POST("/user/wishlist", s.CreateWishlist)
 	g.PATCH("/user/wishlist", s.UpdateUserWishlist)

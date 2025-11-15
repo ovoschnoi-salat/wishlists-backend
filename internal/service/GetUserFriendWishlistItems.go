@@ -1,6 +1,8 @@
 package service
 
 import (
+	"backend/internal/errorResponse"
+	"backend/internal/errorResponse/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"encoding/json"
@@ -30,18 +32,21 @@ type FriendWishlistItem struct {
 // @Security ApiKeyAuth
 // @Param wishlist_id query int true "Wishlist ID"
 // @Produce json
+// @Failure 400 {object} Response
+// @Failure 401 {object} Response
+// @Failure 500 {object} Response
 // @Success 200 {array} FriendWishlistItem{links=[]WishlistItemLink}
 func (s *Service) GetUserFriendWishlistItems(c *gin.Context) {
-	authData := middlewares.GetInitDataFromContext(c)
-	if authData == nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+	authData, authorized := middlewares.GetInitDataFromContext(c)
+	if !authorized {
+		errorResponse.Send(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, nil)
 		return
 	}
 
 	wishlistIDStr := c.Query("wishlist_id")
 	wishlistID, err := strconv.ParseInt(wishlistIDStr, 10, 64)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid wishlist ID: %w", err))
+		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid wishlist_id: %w", err))
 		return
 	}
 
@@ -50,7 +55,7 @@ func (s *Service) GetUserFriendWishlistItems(c *gin.Context) {
 		FriendID:   authData.User.ID,
 	})
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error getting friend wishlist items: %w", err))
+		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error getting friend wishlist items: %w", err))
 		return
 	}
 

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"backend/internal/errorResponse"
+	"backend/internal/errorResponse/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"errors"
@@ -18,33 +20,36 @@ import (
 // @Security ApiKeyAuth
 // @Param username query string true "Friend username"
 // @Produce json
-// @Success 200 {object} map[string]string
+// @Failure 400 {object} Response
+// @Failure 401 {object} Response
+// @Failure 500 {object} Response
+// @Success 204
 func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
-	authData := middlewares.GetInitDataFromContext(c)
-	if authData == nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+	authData, authorized := middlewares.GetInitDataFromContext(c)
+	if !authorized {
+		errorResponse.Send(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, nil)
 		return
 	}
 
 	friendUsernameStr := c.Query("username")
 
 	if authData.User.Username == friendUsernameStr {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("cannot send friend request to yourself"))
+		errorResponse.Send(c, http.StatusBadRequest, codes.CantSendRequestToYourselfErrCode, nil)
 		return
 	}
 
 	friend, err := s.db.GetUserByUsername(c, friendUsernameStr)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			c.AbortWithError(http.StatusNotFound, fmt.Errorf("user not found or don't want to receive requests"))
+			errorResponse.Send(c, http.StatusNotFound, codes.FriendNotFoundErrCode, nil)
 			return
 		}
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("cannot get user by username: %w", err))
+		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("cannot get user by username: %w", err))
 		return
 	}
 
 	if !friend.OpenToRequests {
-		c.AbortWithError(http.StatusNotFound, fmt.Errorf("user not found or don't want to receive requests"))
+		errorResponse.Send(c, http.StatusNotFound, codes.FriendNotFoundErrCode, nil)
 		return
 	}
 
@@ -53,13 +58,13 @@ func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 		UserIDTo:   friend.ID,
 	})
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error creating friendship: %w", err))
+		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating friendship: %w", err))
 		return
 	}
-	if count < 1 {
-		c.AbortWithError(http.StatusInternalServerError, errors.New("error creating friendship: no rows updated"))
+	if count == 0 {
+		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, errors.New("error creating friendship: no rows updated"))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Friend request sent successfully"})
+	c.Status(http.StatusNoContent)
 }

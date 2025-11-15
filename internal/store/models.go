@@ -23,8 +23,8 @@ type FriendsRequest struct {
 type User struct {
 	ID             int64            `json:"id"`
 	CreatedAt      pgtype.Timestamp `json:"created_at"`
+	UpdatedAt      pgtype.Timestamp `json:"updated_at"`
 	Username       string           `json:"username"`
-	Name           pgtype.Text      `json:"name"`
 	DisplayedName  string           `json:"displayed_name"`
 	PhotoUrl       string           `json:"photo_url"`
 	OpenToRequests bool             `json:"open_to_requests"`

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"backend/internal/errorResponse"
+	"backend/internal/errorResponse/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"fmt"
@@ -24,17 +26,21 @@ type CreateWishlistRequest struct {
 // @Accept	json
 // @Produce	json
 // @Param	wishlist	body	CreateWishlistRequest	true	"request body"
+// @Failure 400 {object} Response
+// @Failure 401 {object} Response
+// @Failure 500 {object} Response
 // @Success 200 {object} Wishlist
 func (s *Service) CreateWishlist(c *gin.Context) {
-	authData := middlewares.GetInitDataFromContext(c)
-	if authData == nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+	authData, authorized := middlewares.GetInitDataFromContext(c)
+	if !authorized {
+		errorResponse.Send(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, nil)
 		return
 	}
 
 	req := new(CreateWishlistRequest)
-	err := c.BindJSON(req)
+	err := c.ShouldBindJSON(req)
 	if err != nil {
+		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
 		return
 	}
 
@@ -45,7 +51,7 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 		IsPrivate:   req.IsPrivate,
 	})
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error creating wishlist: %w", err))
+		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating wishlist: %w", err))
 		return
 	}
 
@@ -57,9 +63,9 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 				UserID:  UserID,
 			})
 			if err != nil {
-				c.Error(fmt.Errorf("error inserting wishlist access item: %w", err))
+				_ = c.Error(fmt.Errorf("error inserting wishlist access item: %w", err))
 			} else if count == 0 {
-				c.Error(fmt.Errorf("error inserting wishlist access item: not inserted id %d", UserID))
+				_ = c.Error(fmt.Errorf("error inserting wishlist access item: not inserted id %d", UserID))
 			}
 		}
 	}

@@ -1,6 +1,8 @@
 package middlewares
 
 import (
+	"backend/internal/errorResponse/codes"
+	uuid2 "backend/internal/middlewares/uuid"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,6 +19,11 @@ func Logger(c *gin.Context) {
 	if latency > time.Minute {
 		latency = latency.Truncate(time.Second)
 	}
+
+	uuid := uuid2.GetUUIDFromContext(c)
+
+	errCode, foundErrCode := codes.GetErrorCodeFromContext(c)
+
 	var event *zerolog.Event
 	if c.Writer.Status() >= 500 {
 		event = log.Error()
@@ -33,9 +40,13 @@ func Logger(c *gin.Context) {
 		Str("latency", latency.String()).
 		Str("method", c.Request.Method).
 		Str("pattern", c.FullPath()).
-		Str("path", c.Request.URL.Path)
-	authData := GetInitDataFromContext(c)
-	if authData != nil {
+		Str("path", c.Request.URL.Path).
+		Str("uuid", uuid.String())
+	if foundErrCode {
+		event = event.Int32("error-code", int32(errCode))
+	}
+	authData, authorized := GetInitDataFromContext(c)
+	if authorized {
 		event = event.Any("username", authData.User.Username)
 		event = event.Any("user_id", authData.User.ID)
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"backend/internal/config"
 	"backend/internal/middlewares"
+	"backend/internal/middlewares/uuid"
 	"backend/internal/service"
 	"backend/internal/store"
 	"backend/pkg/graceful"
@@ -58,7 +59,7 @@ func main() {
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-	router.Use(middlewares.Logger, gin.Recovery())
+	router.Use(uuid.Generator, middlewares.Logger, gin.Recovery())
 
 	router.Use(cors.New(cors.Config{
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
@@ -72,7 +73,7 @@ func main() {
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	}
 
-	serviceObj.RegisterHandlers(router.Group("", middlewares.NewTgAuthMiddleware("", storeObj, cfg.Stage)))
+	serviceObj.RegisterHandlers(router.Group("", middlewares.NewMiddleware("", storeObj, cfg.Stage)))
 
 	httpServer := http.NewServer(cfg.HttpServer, router)
 

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"backend/internal/errorResponse"
+	"backend/internal/errorResponse/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"encoding/json"
@@ -21,11 +23,14 @@ import (
 // @Accept	json
 // @Param	item_id	query	int							true	"Item ID"
 // @Param	item	body	CreateWishlistItemRequest	true	"Item"true "request body"
+// @Failure 400 {object} Response
+// @Failure 401 {object} Response
+// @Failure 500 {object} Response
 // @Success 200 {object} WishlistItem
 func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
-	authData := middlewares.GetInitDataFromContext(c)
-	if authData == nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+	authData, authorized := middlewares.GetInitDataFromContext(c)
+	if !authorized {
+		errorResponse.Send(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, nil)
 		return
 	}
 
@@ -33,22 +38,22 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 	itemIDRaw := c.Query("item_id")
 	itemID, err := strconv.ParseInt(itemIDRaw, 10, 64)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid item_id: %s", itemIDRaw))
+		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid item_id: %s", itemIDRaw))
 		return
 	}
 
 	// Parse request body
 	req := new(CreateWishlistItemRequest)
-	err = c.BindJSON(req)
+	err = c.ShouldBindJSON(req)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid request body: %s", err))
+		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
 		return
 	}
 
 	// Convert links to JSON bytes
 	linksJSON, err := json.Marshal(req.Links)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid link format: %s", err))
+		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid link format: %s", err))
 		return
 	}
 
@@ -64,21 +69,21 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("wish %s cannot be updated: %w", itemIDRaw, err))
+			errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestErrCode, fmt.Errorf("wish %s cannot be updated: %w", itemIDRaw, err))
 			return
 		}
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error updating wishlist item: %w", err))
+		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error updating wishlist item: %w", err))
 		return
 	}
 
 	if !wishlistItem.Reservable && wishlistItem.ReservedBy.Int64 != 0 {
 		count, err := s.db.ResetWishlistItemReservation(c, wishlistItem.ID)
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error resetting wishlist item reservationfor item %d: %w", wishlistItem.ID, err))
+			errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error resetting wishlist item reservationfor item %d: %w", wishlistItem.ID, err))
 			return
 		}
 		if count == 0 {
-			c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error resetting wishlist item reservation for item %d", wishlistItem.ID))
+			errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error resetting wishlist item reservation for item %d: no rows affected", wishlistItem.ID))
 			return
 		}
 	}

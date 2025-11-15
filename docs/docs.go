@@ -15,6 +15,56 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/user": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "updates user",
+                "parameters": [
+                    {
+                        "description": "request body",
+                        "name": "wishlist",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.UpdateUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/friend/request": {
             "post": {
                 "security": [
@@ -47,6 +97,18 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -74,6 +136,18 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -101,6 +175,18 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -152,6 +238,18 @@ const docTemplate = `{
                                 ]
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -179,6 +277,18 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -242,6 +352,18 @@ const docTemplate = `{
                                 "$ref": "#/definitions/service.Wishlist"
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -268,6 +390,18 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/service.Friend"
                             }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
                         }
                     }
                 }
@@ -296,6 +430,18 @@ const docTemplate = `{
                                 "$ref": "#/definitions/service.Friend"
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -319,6 +465,18 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/service.IncomingFriendsRequestsCountResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
                         }
                     }
                 }
@@ -346,6 +504,18 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/service.Friend"
                             }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
                         }
                     }
                 }
@@ -385,6 +555,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/service.Wishlist"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             },
@@ -416,6 +598,18 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             },
@@ -459,6 +653,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/service.Wishlist"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -495,6 +701,18 @@ const docTemplate = `{
                                 "type": "number"
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -527,6 +745,18 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/service.WishlistItem"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
                         }
                     }
                 }
@@ -563,6 +793,18 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/service.WishlistItem"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
                         }
                     }
                 }
@@ -604,6 +846,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/service.WishlistItem"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -640,6 +894,18 @@ const docTemplate = `{
                                 "$ref": "#/definitions/service.WishlistItem"
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
@@ -667,12 +933,42 @@ const docTemplate = `{
                                 "$ref": "#/definitions/service.Wishlist"
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/service.errorCodeResponse"
+                        }
                     }
                 }
             }
         }
     },
     "definitions": {
+        "codes.ErrorCode": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1001,
+                1002,
+                1003,
+                1004
+            ],
+            "x-enum-varnames": [
+                "UnknownErrCode",
+                "UnauthorizedErrCode",
+                "InternalErrCode",
+                "NotFoundErrCode",
+                "NoAccessErrCode"
+            ]
+        },
         "service.CreateWishlistItemRequest": {
             "type": "object",
             "properties": {
@@ -716,6 +1012,17 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
+                }
+            }
+        },
+        "service.errorCodeResponse": {
+            "type": "object",
+            "properties": {
+                "requestUUID": {
+                    "type": "string"
+                },
+                "subcode": {
+                    "$ref": "#/definitions/codes.ErrorCode"
                 }
             }
         },
@@ -776,6 +1083,34 @@ const docTemplate = `{
             "properties": {
                 "count": {
                     "type": "integer"
+                }
+            }
+        },
+        "service.UpdateUser": {
+            "type": "object",
+            "properties": {
+                "displayed_name": {
+                    "type": "string"
+                },
+                "open_to_requests": {
+                    "type": "boolean"
+                },
+                "photo_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.User": {
+            "type": "object",
+            "properties": {
+                "displayed_name": {
+                    "type": "string"
+                },
+                "open_to_requests": {
+                    "type": "boolean"
+                },
+                "photo_url": {
+                    "type": "string"
                 }
             }
         },

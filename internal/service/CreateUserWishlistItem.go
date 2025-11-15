@@ -1,6 +1,8 @@
 package service
 
 import (
+	"backend/internal/errorResponse"
+	"backend/internal/errorResponse/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"encoding/json"
@@ -42,23 +44,26 @@ type WishlistItem struct {
 // @Accept json
 // @Produce json
 // @Param item body CreateWishlistItemRequest true "request body"
+// @Failure 400 {object} Response
+// @Failure 401 {object} Response
+// @Failure 500 {object} Response
 // @Success 200 {object} WishlistItem
 func (s *Service) CreateUserWishlistItem(c *gin.Context) {
-	authData := middlewares.GetInitDataFromContext(c)
-	if authData == nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+	authData, authorized := middlewares.GetInitDataFromContext(c)
+	if !authorized {
+		errorResponse.Send(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, nil)
 		return
 	}
 
 	req := new(CreateWishlistItemRequest)
-	if err := c.BindJSON(req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid request body: %w", err))
+	if err := c.ShouldBindJSON(req); err != nil {
+		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
 		return
 	}
 
 	linksJSON, err := json.Marshal(req.Links)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid links format: %w", err))
+		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid links format: %w", err))
 		return
 	}
 
@@ -72,7 +77,7 @@ func (s *Service) CreateUserWishlistItem(c *gin.Context) {
 		Reservable:  req.Reservable,
 	})
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error creating item: %w", err))
+		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating item: %w", err))
 		return
 	}
 

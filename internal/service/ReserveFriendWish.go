@@ -1,6 +1,8 @@
 package service
 
 import (
+	"backend/internal/errorResponse"
+	"backend/internal/errorResponse/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"errors"
@@ -18,18 +20,21 @@ import (
 // @Router		/api/user/friend/wishlist/wish/reservation/reserve [post]
 // @Security	ApiKeyAuth
 // @Param		wish_id query int true "Wish ID"
+// @Failure 400 {object} Response
+// @Failure 401 {object} Response
+// @Failure 500 {object} Response
 // @Success		204
 func (s *Service) ReserveFriendWish(c *gin.Context) {
-	authData := middlewares.GetInitDataFromContext(c)
-	if authData == nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+	authData, authorized := middlewares.GetInitDataFromContext(c)
+	if !authorized {
+		errorResponse.Send(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, nil)
 		return
 	}
 
 	wishIDStr := c.Query("wish_id")
 	wishID, err := strconv.ParseInt(wishIDStr, 10, 64)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid wish ID: %w", err))
+		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid wish_id: %w", err))
 		return
 	}
 
@@ -38,11 +43,11 @@ func (s *Service) ReserveFriendWish(c *gin.Context) {
 		ReservedBy: pgtype.Int8{Int64: authData.User.ID, Valid: true},
 	})
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error reserving wishlist: %w", err))
+		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error reserving wish: %w", err))
 		return
 	}
-	if count < 1 {
-		c.AbortWithError(http.StatusBadRequest, errors.New("wish cannot be reserved"))
+	if count == 0 {
+		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("wish cannot be reserved"))
 		return
 	}
 

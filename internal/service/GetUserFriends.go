@@ -1,6 +1,8 @@
 package service
 
 import (
+	"backend/internal/errorResponse"
+	"backend/internal/errorResponse/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"fmt"
@@ -22,19 +24,22 @@ type Friend struct {
 // @Router /api/user/friends [get]
 // @Security ApiKeyAuth
 // @Produce json
+// @Failure 401 {object} Response
+// @Failure 500 {object} Response
 // @Success 200 {array} Friend
 func (s *Service) GetFriends(c *gin.Context) {
-	authData := middlewares.GetInitDataFromContext(c)
-	if authData == nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+	authData, authorized := middlewares.GetInitDataFromContext(c)
+	if !authorized {
+		errorResponse.Send(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, nil)
 		return
 	}
 
 	friends, err := s.db.GetFriends(c, authData.User.ID)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("error getting friends: %w", err))
+		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error getting friends: %w", err))
 		return
 	}
+
 	c.JSON(http.StatusOK, mapStoreUsersToFriends(friends))
 }
 
@@ -42,7 +47,7 @@ func mapStoreUserToFriend(user store.User) Friend {
 	return Friend{
 		ID:       user.ID,
 		Username: user.Username,
-		Name:     user.Name,
+		Name:     user.DisplayedName,
 		PhotoUrl: user.PhotoUrl,
 	}
 }
