@@ -1,11 +1,16 @@
 definitions:
-  errorCode.ErrorCode:
+  codes.ErrorCode:
     enum:
     - 0
     - 1001
     - 1002
     - 1003
     - 1004
+    - 1005
+    - 1005
+    - 2001
+    - 2002
+    - 3001
     format: int32
     type: integer
     x-enum-varnames:
@@ -14,6 +19,18 @@ definitions:
     - InternalErrCode
     - NotFoundErrCode
     - NoAccessErrCode
+    - InvalidRequestErrCode
+    - InvalidRequestParametersErrCode
+    - FriendNotFoundErrCode
+    - CantSendRequestToYourselfErrCode
+    - WishNotFoundErrCode
+  errorResponse.Response:
+    properties:
+      requestUUID:
+        type: string
+      subcode:
+        $ref: '#/definitions/codes.ErrorCode'
+    type: object
   service.CreateWishlistItemRequest:
     properties:
       description:
@@ -43,13 +60,6 @@ definitions:
         items:
           type: integer
         type: array
-    type: object
-  service.ErrorCodeResponse:
-    properties:
-      requestUUID:
-        type: string
-      subcode:
-        $ref: '#/definitions/errorCode.ErrorCode'
     type: object
   service.Friend:
     properties:
@@ -170,14 +180,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/service.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: updates user
@@ -194,20 +208,20 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: creates a friend request to another user
@@ -224,14 +238,18 @@ paths:
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: accepts an incoming friend request
@@ -248,14 +266,18 @@ paths:
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: accepts an incoming friend request
@@ -285,14 +307,18 @@ paths:
                     type: array
                 type: object
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: returns wishlist items
@@ -309,14 +335,18 @@ paths:
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: reserves friend's wish
@@ -333,6 +363,18 @@ paths:
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: reserves friend's wish
@@ -355,14 +397,18 @@ paths:
             items:
               $ref: '#/definitions/service.Wishlist'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: returns user's friend wishlists
@@ -382,11 +428,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: returns user's friends list
@@ -406,11 +452,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: returns user's incoming friends requests
@@ -428,11 +474,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: returns user's incoming friends requests count
@@ -452,11 +498,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: returns user's incoming friends requests
@@ -477,14 +523,18 @@ paths:
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: creates wishlist
@@ -512,14 +562,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/service.Wishlist'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: creates wishlist
@@ -542,14 +596,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/service.Wishlist'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: creates wishlist
@@ -572,14 +630,18 @@ paths:
             items:
               type: number
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: returns wishlist access list
@@ -600,14 +662,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/service.WishlistItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: returns wishlist item
@@ -633,14 +699,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/service.WishlistItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: updates a wishlist item
@@ -663,14 +733,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/service.WishlistItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: creates a wishlist item
@@ -693,14 +767,18 @@ paths:
             items:
               $ref: '#/definitions/service.WishlistItem'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorResponse.Response'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: returns wishlist items
@@ -720,11 +798,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/service.ErrorCodeResponse'
+            $ref: '#/definitions/errorResponse.Response'
       security:
       - ApiKeyAuth: []
       summary: returns user's wishlists

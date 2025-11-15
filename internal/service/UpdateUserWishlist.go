@@ -23,9 +23,9 @@ import (
 // @Param	wishlist_id	query	int						true	"Wishlist ID"
 // @Param	wishlist	body	CreateWishlistRequest	true	"request body"
 // @Produce	json
-// @Failure 400 {object} Response
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 400 {object} errorResponse.Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success 200 {object} Wishlist
 func (s *Service) UpdateUserWishlist(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)

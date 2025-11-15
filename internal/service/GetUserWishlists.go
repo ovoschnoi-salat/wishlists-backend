@@ -24,8 +24,8 @@ type Wishlist struct {
 // @Router /api/user/wishlists [get]
 // @Security ApiKeyAuth
 // @Produce json
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success 200 {array} Wishlist
 func (s *Service) GetUserWishlists(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)

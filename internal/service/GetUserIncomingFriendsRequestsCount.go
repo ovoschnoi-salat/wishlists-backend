@@ -20,8 +20,8 @@ type IncomingFriendsRequestsCountResponse struct {
 // @Router /api/user/friends/requests/incoming/count [get]
 // @Security ApiKeyAuth
 // @Produce json
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success 200 {object} IncomingFriendsRequestsCountResponse
 func (s *Service) GetUserIncomingFriendsRequestsCount(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)

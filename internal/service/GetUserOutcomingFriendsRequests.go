@@ -16,8 +16,8 @@ import (
 // @Router /api/user/friends/requests/outcoming [get]
 // @Security ApiKeyAuth
 // @Produce json
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success 200 {array} Friend
 func (s *Service) GetUserOutcomingFriendsRequests(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)

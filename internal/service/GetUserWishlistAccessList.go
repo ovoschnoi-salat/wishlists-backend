@@ -19,9 +19,9 @@ import (
 // @Security ApiKeyAuth
 // @Param wishlist_id query int true "Wishlist ID"
 // @Produce json
-// @Failure 400 {object} Response
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 400 {object} errorResponse.Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success 200 {array} number
 func (s *Service) GetUserWishlistAccessList(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)

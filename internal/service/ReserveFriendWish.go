@@ -20,9 +20,9 @@ import (
 // @Router		/api/user/friend/wishlist/wish/reservation/reserve [post]
 // @Security	ApiKeyAuth
 // @Param		wish_id query int true "Wish ID"
-// @Failure 400 {object} Response
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 400 {object} errorResponse.Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success		204
 func (s *Service) ReserveFriendWish(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)

@@ -24,8 +24,8 @@ type Friend struct {
 // @Router /api/user/friends [get]
 // @Security ApiKeyAuth
 // @Produce json
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success 200 {array} Friend
 func (s *Service) GetFriends(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)

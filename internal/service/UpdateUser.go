@@ -31,9 +31,9 @@ type User struct {
 // @Accept	json
 // @Param	wishlist	body	UpdateUser	true	"request body"
 // @Produce	json
-// @Failure 400 {object} Response
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 400 {object} errorResponse.Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success 200 {object} User
 func (s *Service) UpdateUser(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)

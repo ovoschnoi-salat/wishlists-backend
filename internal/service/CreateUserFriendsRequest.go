@@ -20,9 +20,9 @@ import (
 // @Security ApiKeyAuth
 // @Param username query string true "Friend username"
 // @Produce json
-// @Failure 400 {object} Response
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 400 {object} errorResponse.Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success 204
 func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)

@@ -26,9 +26,9 @@ type CreateWishlistRequest struct {
 // @Accept	json
 // @Produce	json
 // @Param	wishlist	body	CreateWishlistRequest	true	"request body"
-// @Failure 400 {object} Response
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 400 {object} errorResponse.Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success 200 {object} Wishlist
 func (s *Service) CreateWishlist(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)

@@ -19,9 +19,9 @@ import (
 // @Router /api/user/friend/request/accept [post]
 // @Security ApiKeyAuth
 // @Param friend_id query int true "Friend ID"
-// @Failure 400 {object} Response
-// @Failure 401 {object} Response
-// @Failure 500 {object} Response
+// @Failure 400 {object} errorResponse.Response
+// @Failure 401 {object} errorResponse.Response
+// @Failure 500 {object} errorResponse.Response
 // @Success 204
 func (s *Service) AcceptUserIncomingFriendsRequest(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
