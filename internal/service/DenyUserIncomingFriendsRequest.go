@@ -26,7 +26,7 @@ import (
 func (s *Service) DenyUserIncomingFriendsRequest(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
-		errorResponse.Send(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, nil)
+		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
 		return
 	}
 
