@@ -21,11 +21,13 @@ type FriendsRequest struct {
 }
 
 type User struct {
-	ID        int64            `json:"id"`
-	CreatedAt pgtype.Timestamp `json:"created_at"`
-	Username  string           `json:"username"`
-	Name      string           `json:"name"`
-	PhotoUrl  string           `json:"photo_url"`
+	ID             int64            `json:"id"`
+	CreatedAt      pgtype.Timestamp `json:"created_at"`
+	Username       string           `json:"username"`
+	Name           pgtype.Text      `json:"name"`
+	DisplayedName  string           `json:"displayed_name"`
+	PhotoUrl       string           `json:"photo_url"`
+	OpenToRequests bool             `json:"open_to_requests"`
 }
 
 type Wishlist struct {

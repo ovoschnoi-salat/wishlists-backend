@@ -172,29 +172,39 @@ func (q *Queries) CreateFriendsRequest(ctx context.Context, arg CreateFriendsReq
 	return result.RowsAffected(), nil
 }
 
-const createUser = `-- name: CreateUser :execrows
-INSERT INTO users (id, username, name, photo_url)
-VALUES ($1, $2, $3, $4)
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (id, username, name, photo_url, displayed_name)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, created_at, username, name, displayed_name, photo_url, open_to_requests
 `
 
 type CreateUserParams struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username"`
-	Name     string `json:"name"`
-	PhotoUrl string `json:"photo_url"`
+	ID            int64       `json:"id"`
+	Username      string      `json:"username"`
+	Name          pgtype.Text `json:"name"`
+	PhotoUrl      string      `json:"photo_url"`
+	DisplayedName string      `json:"displayed_name"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, error) {
-	result, err := q.db.Exec(ctx, createUser,
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, createUser,
 		arg.ID,
 		arg.Username,
 		arg.Name,
 		arg.PhotoUrl,
+		arg.DisplayedName,
 	)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.Username,
+		&i.Name,
+		&i.DisplayedName,
+		&i.PhotoUrl,
+		&i.OpenToRequests,
+	)
+	return i, err
 }
 
 const createWishlist = `-- name: CreateWishlist :one
@@ -459,7 +469,7 @@ func (q *Queries) GetFriendWishlists(ctx context.Context, arg GetFriendWishlists
 }
 
 const getFriends = `-- name: GetFriends :many
-SELECT id, created_at, username, name, photo_url
+SELECT id, created_at, username, name, displayed_name, photo_url, open_to_requests
 FROM users
 WHERE id IN (SELECT friend_id FROM friends WHERE user_id = $1)
 `
@@ -478,7 +488,9 @@ func (q *Queries) GetFriends(ctx context.Context, userID int64) ([]User, error) 
 			&i.CreatedAt,
 			&i.Username,
 			&i.Name,
+			&i.DisplayedName,
 			&i.PhotoUrl,
+			&i.OpenToRequests,
 		); err != nil {
 			return nil, err
 		}
@@ -491,7 +503,7 @@ func (q *Queries) GetFriends(ctx context.Context, userID int64) ([]User, error) 
 }
 
 const getIncomingFriendsRequests = `-- name: GetIncomingFriendsRequests :many
-SELECT id, created_at, username, name, photo_url
+SELECT id, created_at, username, name, displayed_name, photo_url, open_to_requests
 FROM users
 WHERE id IN (SELECT user_id_from FROM friends_requests WHERE user_id_to = $1)
 `
@@ -510,7 +522,9 @@ func (q *Queries) GetIncomingFriendsRequests(ctx context.Context, userIDTo int64
 			&i.CreatedAt,
 			&i.Username,
 			&i.Name,
+			&i.DisplayedName,
 			&i.PhotoUrl,
+			&i.OpenToRequests,
 		); err != nil {
 			return nil, err
 		}
@@ -536,7 +550,7 @@ func (q *Queries) GetIncomingFriendsRequestsCount(ctx context.Context, userIDTo 
 }
 
 const getOutcomingFriendsRequests = `-- name: GetOutcomingFriendsRequests :many
-SELECT id, created_at, username, name, photo_url
+SELECT id, created_at, username, name, displayed_name, photo_url, open_to_requests
 FROM users
 WHERE id IN (SELECT user_id_to FROM friends_requests WHERE user_id_from = $1)
 `
@@ -555,7 +569,9 @@ func (q *Queries) GetOutcomingFriendsRequests(ctx context.Context, userIDFrom in
 			&i.CreatedAt,
 			&i.Username,
 			&i.Name,
+			&i.DisplayedName,
 			&i.PhotoUrl,
+			&i.OpenToRequests,
 		); err != nil {
 			return nil, err
 		}
@@ -568,7 +584,7 @@ func (q *Queries) GetOutcomingFriendsRequests(ctx context.Context, userIDFrom in
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, created_at, username, name, photo_url
+SELECT id, created_at, username, name, displayed_name, photo_url, open_to_requests
 FROM users
 WHERE id = $1
 `
@@ -581,13 +597,15 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 		&i.CreatedAt,
 		&i.Username,
 		&i.Name,
+		&i.DisplayedName,
 		&i.PhotoUrl,
+		&i.OpenToRequests,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, created_at, username, name, photo_url
+SELECT id, created_at, username, name, displayed_name, photo_url, open_to_requests
 FROM users
 WHERE username = $1
 `
@@ -600,7 +618,9 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.CreatedAt,
 		&i.Username,
 		&i.Name,
+		&i.DisplayedName,
 		&i.PhotoUrl,
+		&i.OpenToRequests,
 	)
 	return i, err
 }

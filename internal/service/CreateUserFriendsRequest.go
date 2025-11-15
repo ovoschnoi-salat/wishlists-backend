@@ -36,10 +36,15 @@ func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 	friend, err := s.db.GetUserByUsername(c, friendUsernameStr)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			c.AbortWithError(http.StatusNotFound, fmt.Errorf("user not found: %w", err))
+			c.AbortWithError(http.StatusNotFound, fmt.Errorf("user not found or don't want to receive requests"))
 			return
 		}
 		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("cannot get user by username: %w", err))
+		return
+	}
+
+	if !friend.OpenToRequests {
+		c.AbortWithError(http.StatusNotFound, fmt.Errorf("user not found or don't want to receive requests"))
 		return
 	}
 

@@ -3,12 +3,17 @@
 
 CREATE TABLE IF NOT EXISTS users
 (
-    id         BIGINT PRIMARY KEY,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    username   TEXT      NOT NULL,
-    name       TEXT      NOT NULL,
-    photo_url  TEXT      NOT NULL
+    id               BIGINT PRIMARY KEY,
+    created_at       TIMESTAMP NOT NULL DEFAULT NOW(),
+    username         TEXT      NOT NULL,
+    name             TEXT,
+    displayed_name   TEXT      NOT NULL,
+    photo_url        TEXT      NOT NULL,
+--     language         TEXT      NOT NULL,
+    open_to_requests BOOLEAN   NOT NULL DEFAULT TRUE
 );
+
+CREATE INDEX IF NOT EXISTS users_username_idx ON users (username);
 
 CREATE TABLE IF NOT EXISTS friends
 (

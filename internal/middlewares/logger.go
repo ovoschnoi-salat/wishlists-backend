@@ -18,8 +18,12 @@ func Logger(c *gin.Context) {
 		latency = latency.Truncate(time.Second)
 	}
 	var event *zerolog.Event
-	if c.Writer.Status() >= 500 || len(c.Errors) != 0 {
+	if c.Writer.Status() >= 500 {
 		event = log.Error()
+	} else if len(c.Errors) != 0 {
+		event = log.Error()
+		event = event.Strs("errors", c.Errors.Errors())
+		c.JSON(0, c.Errors.JSON())
 	} else {
 		event = log.Info()
 	}
@@ -30,9 +34,6 @@ func Logger(c *gin.Context) {
 		Str("method", c.Request.Method).
 		Str("pattern", c.FullPath()).
 		Str("path", c.Request.URL.Path)
-	if len(c.Errors) != 0 {
-		event = event.Strs("errors", c.Errors.Errors())
-	}
 	authData := GetInitDataFromContext(c)
 	if authData != nil {
 		event = event.Any("username", authData.User.Username)

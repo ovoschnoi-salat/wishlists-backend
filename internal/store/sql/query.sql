@@ -8,9 +8,10 @@ SELECT *
 FROM users
 WHERE username = $1;
 
--- name: CreateUser :execrows
-INSERT INTO users (id, username, name, photo_url)
-VALUES ($1, $2, $3, $4);
+-- name: CreateUser :one
+INSERT INTO users (id, username, name, photo_url, displayed_name)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING *;
 
 
 -- name: GetUserWishlists :many
