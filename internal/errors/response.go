@@ -1,7 +1,7 @@
-package errorResponse
+package errors
 
 import (
-	"backend/internal/errorResponse/codes"
+	"backend/internal/errors/codes"
 	uuidMiddleware "backend/internal/middlewares/uuid"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +13,7 @@ type Response struct {
 	RequestUUID uuid.UUID
 }
 
-func Send(c *gin.Context, httpCode int, errCode codes.ErrorCode, err error) {
+func SendResponse(c *gin.Context, httpCode int, errCode codes.ErrorCode, err error) {
 	requestUUID := uuidMiddleware.GetUUIDFromContext(c)
 	resp := Response{
 		Subcode:     errCode,

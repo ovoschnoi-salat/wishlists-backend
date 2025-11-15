@@ -1,8 +1,8 @@
 package service
 
 import (
-	"backend/internal/errorResponse"
-	"backend/internal/errorResponse/codes"
+	"backend/internal/errors"
+	"backend/internal/errors/codes"
 	"backend/internal/middlewares"
 	"fmt"
 	"net/http"
@@ -20,19 +20,19 @@ type IncomingFriendsRequestsCountResponse struct {
 // @Router /api/user/friends/requests/incoming/count [get]
 // @Security ApiKeyAuth
 // @Produce json
-// @Failure 401 {object} errorResponse.Response
-// @Failure 500 {object} errorResponse.Response
+// @Failure 401 {object} errors.Response
+// @Failure 500 {object} errors.Response
 // @Success 200 {object} IncomingFriendsRequestsCountResponse
 func (s *Service) GetUserIncomingFriendsRequestsCount(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
-		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
+		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
 		return
 	}
 
 	count, err := s.db.GetIncomingFriendsRequestsCount(c, authData.User.ID)
 	if err != nil {
-		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get incoming friend requests count: %w", err))
+		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get incoming friend requests count: %w", err))
 		return
 	}
 	c.JSON(http.StatusOK, IncomingFriendsRequestsCountResponse{count})

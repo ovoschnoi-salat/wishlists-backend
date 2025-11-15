@@ -1,8 +1,8 @@
 package service
 
 import (
-	"backend/internal/errorResponse"
-	"backend/internal/errorResponse/codes"
+	"backend/internal/errors"
+	"backend/internal/errors/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"fmt"
@@ -19,21 +19,21 @@ import (
 // @Security ApiKeyAuth
 // @Param wishlist_id query int true "Wishlist ID"
 // @Produce json
-// @Failure 400 {object} errorResponse.Response
-// @Failure 401 {object} errorResponse.Response
-// @Failure 500 {object} errorResponse.Response
+// @Failure 400 {object} errors.Response
+// @Failure 401 {object} errors.Response
+// @Failure 500 {object} errors.Response
 // @Success 200 {array} number
 func (s *Service) GetUserWishlistAccessList(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
-		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
+		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
 		return
 	}
 
 	wishlistIDStr := c.Query("wishlist_id")
 	wishlistID, err := strconv.ParseInt(wishlistIDStr, 10, 64)
 	if err != nil {
-		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid wishlist_id: %w", err))
+		errors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid wishlist_id: %w", err))
 		return
 	}
 
@@ -42,7 +42,7 @@ func (s *Service) GetUserWishlistAccessList(c *gin.Context) {
 		OwnerID: authData.User.ID,
 	})
 	if err != nil {
-		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get access list: %w", err))
+		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get access list: %w", err))
 		return
 	}
 

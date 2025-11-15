@@ -1,8 +1,8 @@
 package service
 
 import (
-	"backend/internal/errorResponse"
-	"backend/internal/errorResponse/codes"
+	"backend/internal/errors"
+	"backend/internal/errors/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
 	"fmt"
@@ -31,20 +31,20 @@ type User struct {
 // @Accept	json
 // @Param	wishlist	body	UpdateUser	true	"request body"
 // @Produce	json
-// @Failure 400 {object} errorResponse.Response
-// @Failure 401 {object} errorResponse.Response
-// @Failure 500 {object} errorResponse.Response
+// @Failure 400 {object} errors.Response
+// @Failure 401 {object} errors.Response
+// @Failure 500 {object} errors.Response
 // @Success 200 {object} User
 func (s *Service) UpdateUser(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
-		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
+		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
 		return
 	}
 
 	req := new(UpdateUser)
 	if err := c.ShouldBindJSON(req); err != nil {
-		errorResponse.Send(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
+		errors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
 		return
 	}
 
@@ -55,7 +55,7 @@ func (s *Service) UpdateUser(c *gin.Context) {
 		OpenToRequests: req.OpenToRequests,
 	})
 	if err != nil {
-		errorResponse.Send(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to update user: %w", err))
+		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to update user: %w", err))
 		return
 	}
 

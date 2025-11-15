@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"backend/internal/errorResponse/codes"
+	"backend/internal/errors/codes"
 	uuid2 "backend/internal/middlewares/uuid"
 	"time"
 
