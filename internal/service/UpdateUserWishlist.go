@@ -1,10 +1,10 @@
 package service
 
 import (
-	"backend/internal/errors"
-	"backend/internal/errors/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"backend/internal/subcodeErrors"
+	"backend/internal/subcodeErrors/codes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -23,27 +23,27 @@ import (
 // @Param	wishlist_id	query	int						true	"Wishlist ID"
 // @Param	wishlist	body	CreateWishlistRequest	true	"request body"
 // @Produce	json
-// @Failure 400 {object} errors.Response
-// @Failure 401 {object} errors.Response
-// @Failure 500 {object} errors.Response
+// @Failure 400 {object} subcodeErrors.Response
+// @Failure 401 {object} subcodeErrors.Response
+// @Failure 500 {object} subcodeErrors.Response
 // @Success 200 {object} Wishlist
 func (s *Service) UpdateUserWishlist(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
-		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
 		return
 	}
 
 	wishlistIDRaw := c.Query("wishlist_id")
 	wishlistID, err := strconv.ParseInt(wishlistIDRaw, 10, 64)
 	if err != nil {
-		errors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid wishlist_id: %w", err))
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid wishlist_id: %w", err))
 		return
 	}
 
 	req := new(CreateWishlistRequest)
 	if err := c.ShouldBindJSON(req); err != nil {
-		errors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
 		return
 	}
 
@@ -56,10 +56,10 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			errors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, fmt.Errorf("can't update wishlist %s: %w", wishlistIDRaw, err))
+			subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, fmt.Errorf("can't update wishlist %s: %w", wishlistIDRaw, err))
 			return
 		}
-		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to update wishlist %s: %w", wishlistIDRaw, err))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to update wishlist %s: %w", wishlistIDRaw, err))
 		return
 	}
 
@@ -69,7 +69,7 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 			OwnerID: authData.User.ID,
 		})
 		if err != nil {
-			errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get wishlist %s access list: %w", wishlistIDRaw, err))
+			subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get wishlist %s access list: %w", wishlistIDRaw, err))
 			return
 		}
 		usersWithAccessOld := make(map[int64]struct{}, len(accessList))
@@ -88,11 +88,11 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 					UserID: userID,
 				})
 				if err != nil {
-					errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting access for user %d from wishlist %s: %w", userID, wishlistIDRaw, err))
+					subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting access for user %d from wishlist %s: %w", userID, wishlistIDRaw, err))
 					return
 				}
 				if count == 0 {
-					errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting access for user %d from wishlist %s: no rows affected", userID, wishlistIDRaw))
+					subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting access for user %d from wishlist %s: no rows affected", userID, wishlistIDRaw))
 					return
 				}
 			}
@@ -105,11 +105,11 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 					UserID:  userID,
 				})
 				if err != nil {
-					errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error inserting access for user %d to wishlist %s: %w", userID, wishlistIDRaw, err))
+					subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error inserting access for user %d to wishlist %s: %w", userID, wishlistIDRaw, err))
 					return
 				}
 				if count == 0 {
-					errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error inserting access for user %d to wishlist %s: no rows affected", userID, wishlistIDRaw))
+					subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error inserting access for user %d to wishlist %s: no rows affected", userID, wishlistIDRaw))
 					return
 				}
 			}
@@ -117,7 +117,7 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 	} else {
 		err := s.db.DeleteWishlistAccessItems(c, wishlistID)
 		if err != nil {
-			errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to delete wishlist %s access items: %w", wishlistIDRaw, err))
+			subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to delete wishlist %s access items: %w", wishlistIDRaw, err))
 			return
 		}
 	}

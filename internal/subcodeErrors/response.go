@@ -1,8 +1,8 @@
-package errors
+package subcodeErrors
 
 import (
-	"backend/internal/errors/codes"
 	uuidMiddleware "backend/internal/middlewares/uuid"
+	"backend/internal/subcodeErrors/codes"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

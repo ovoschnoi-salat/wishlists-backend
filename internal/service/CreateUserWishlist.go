@@ -1,10 +1,10 @@
 package service
 
 import (
-	"backend/internal/errors"
-	"backend/internal/errors/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"backend/internal/subcodeErrors"
+	"backend/internal/subcodeErrors/codes"
 	"fmt"
 	"net/http"
 
@@ -26,21 +26,21 @@ type CreateWishlistRequest struct {
 // @Accept	json
 // @Produce	json
 // @Param	wishlist	body	CreateWishlistRequest	true	"request body"
-// @Failure 400 {object} errors.Response
-// @Failure 401 {object} errors.Response
-// @Failure 500 {object} errors.Response
+// @Failure 400 {object} subcodeErrors.Response
+// @Failure 401 {object} subcodeErrors.Response
+// @Failure 500 {object} subcodeErrors.Response
 // @Success 200 {object} Wishlist
 func (s *Service) CreateWishlist(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
-		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
 		return
 	}
 
 	req := new(CreateWishlistRequest)
 	err := c.ShouldBindJSON(req)
 	if err != nil {
-		errors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
 		return
 	}
 
@@ -51,7 +51,7 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 		IsPrivate:   req.IsPrivate,
 	})
 	if err != nil {
-		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating wishlist: %w", err))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating wishlist: %w", err))
 		return
 	}
 

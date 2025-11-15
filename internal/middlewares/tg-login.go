@@ -2,9 +2,9 @@ package middlewares
 
 import (
 	"backend/internal/config"
-	"backend/internal/errors"
-	"backend/internal/errors/codes"
 	"backend/internal/store"
+	"backend/internal/subcodeErrors"
+	"backend/internal/subcodeErrors/codes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -26,7 +26,7 @@ func NewMiddleware(secretToken string, db *store.Queries, stage config.Stage) gi
 	return func(c *gin.Context) {
 		initData := c.GetHeader("authorization")
 		if len(initData) == 0 || !strings.HasPrefix(initData, "tma") || len(strings.TrimPrefix(initData, "tma ")) == 0 {
-			errors.SendResponse(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, errors.New("no init data found"))
+			subcodeErrors.SendResponse(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, errors.New("no init data found"))
 			return
 		}
 		initData = strings.TrimPrefix(initData, "tma ")
@@ -34,21 +34,21 @@ func NewMiddleware(secretToken string, db *store.Queries, stage config.Stage) gi
 		if stage == config.PROD {
 			err := initdata.Validate(initData, secretToken, expIn)
 			if err != nil {
-				errors.SendResponse(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, fmt.Errorf("error validating init data: %w", err))
+				subcodeErrors.SendResponse(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, fmt.Errorf("error validating init data: %w", err))
 				return
 			}
 		}
 
 		data, err := initdata.Parse(initData)
 		if err != nil {
-			errors.SendResponse(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, fmt.Errorf("error parsing init data: %w", err))
+			subcodeErrors.SendResponse(c, http.StatusUnauthorized, codes.UnauthorizedErrCode, fmt.Errorf("error parsing init data: %w", err))
 			return
 		}
 		user, err := db.GetUser(c, data.User.ID)
 
 		if err != nil {
 			if !errors.Is(err, pgx.ErrNoRows) {
-				errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error getting user: %w", err))
+				subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error getting user: %w", err))
 				return
 			}
 			req := store.CreateUserParams{
@@ -69,7 +69,7 @@ func NewMiddleware(secretToken string, db *store.Queries, stage config.Stage) gi
 			}
 			user, err = db.CreateUser(c, req)
 			if err != nil {
-				errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating user: %w", err))
+				subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating user: %w", err))
 				return
 			}
 		}

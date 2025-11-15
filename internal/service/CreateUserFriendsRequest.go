@@ -1,10 +1,10 @@
 package service
 
 import (
-	"backend/internal/errors"
-	"backend/internal/errors/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"backend/internal/subcodeErrors"
+	"backend/internal/subcodeErrors/codes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -20,36 +20,36 @@ import (
 // @Security ApiKeyAuth
 // @Param username query string true "Friend username"
 // @Produce json
-// @Failure 400 {object} errors.Response
-// @Failure 401 {object} errors.Response
-// @Failure 500 {object} errors.Response
+// @Failure 400 {object} subcodeErrors.Response
+// @Failure 401 {object} subcodeErrors.Response
+// @Failure 500 {object} subcodeErrors.Response
 // @Success 204
 func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
-		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
 		return
 	}
 
 	friendUsernameStr := c.Query("username")
 
 	if authData.User.Username == friendUsernameStr {
-		errors.SendResponse(c, http.StatusBadRequest, codes.CantSendRequestToYourselfErrCode, nil)
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.CantSendRequestToYourselfErrCode, nil)
 		return
 	}
 
 	friend, err := s.db.GetUserByUsername(c, friendUsernameStr)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			errors.SendResponse(c, http.StatusNotFound, codes.FriendNotFoundErrCode, nil)
+			subcodeErrors.SendResponse(c, http.StatusNotFound, codes.FriendNotFoundErrCode, nil)
 			return
 		}
-		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("cannot get user by username: %w", err))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("cannot get user by username: %w", err))
 		return
 	}
 
 	if !friend.OpenToRequests {
-		errors.SendResponse(c, http.StatusNotFound, codes.FriendNotFoundErrCode, nil)
+		subcodeErrors.SendResponse(c, http.StatusNotFound, codes.FriendNotFoundErrCode, nil)
 		return
 	}
 
@@ -58,11 +58,11 @@ func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 		UserIDTo:   friend.ID,
 	})
 	if err != nil {
-		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating friendship: %w", err))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating friendship: %w", err))
 		return
 	}
 	if count == 0 {
-		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, errors.New("error creating friendship: no rows updated"))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, errors.New("error creating friendship: no rows updated"))
 		return
 	}
 

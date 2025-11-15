@@ -1,10 +1,10 @@
 package service
 
 import (
-	"backend/internal/errors"
-	"backend/internal/errors/codes"
 	"backend/internal/middlewares"
 	"backend/internal/store"
+	"backend/internal/subcodeErrors"
+	"backend/internal/subcodeErrors/codes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -21,14 +21,14 @@ import (
 // @Security ApiKeyAuth
 // @Param item_id query int true "Wishlist item ID"
 // @Produce json
-// @Failure 400 {object} errors.Response
-// @Failure 401 {object} errors.Response
-// @Failure 500 {object} errors.Response
+// @Failure 400 {object} subcodeErrors.Response
+// @Failure 401 {object} subcodeErrors.Response
+// @Failure 500 {object} subcodeErrors.Response
 // @Success 200 {object} WishlistItem
 func (s *Service) GetUserWishlistItem(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
-		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (s *Service) GetUserWishlistItem(c *gin.Context) {
 	itemIDStr := c.Query("item_id")
 	itemID, err := strconv.ParseInt(itemIDStr, 10, 64)
 	if err != nil {
-		errors.SendResponse(c, http.StatusBadRequest, codes.UnauthorizedErrCode, fmt.Errorf("invalid item_id: %w", err))
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.UnauthorizedErrCode, fmt.Errorf("invalid item_id: %w", err))
 		return
 	}
 
@@ -47,9 +47,10 @@ func (s *Service) GetUserWishlistItem(c *gin.Context) {
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			errors.SendResponse(c, http.StatusNotFound, codes.WishNotFoundErrCode, fmt.Errorf("no items found"))
+			subcodeErrors.SendResponse(c, http.StatusNotFound, codes.WishNotFoundErrCode, fmt.Errorf("no items found"))
+			return
 		}
-		errors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get item: %w", err))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get item: %w", err))
 		return
 	}
 

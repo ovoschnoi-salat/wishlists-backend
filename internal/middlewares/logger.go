@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"backend/internal/errors/codes"
 	uuid2 "backend/internal/middlewares/uuid"
+	"backend/internal/subcodeErrors/codes"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +29,7 @@ func Logger(c *gin.Context) {
 		event = log.Error()
 	} else if len(c.Errors) != 0 {
 		event = log.Error()
-		event = event.Strs("errors", c.Errors.Errors())
+		event = event.Strs("subcodeErrors", c.Errors.Errors())
 		c.JSON(0, c.Errors.JSON())
 	} else {
 		event = log.Info()
