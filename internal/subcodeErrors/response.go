@@ -24,4 +24,5 @@ func SendResponse(c *gin.Context, httpCode int, errCode codes.ErrorCode, err err
 		_ = c.Error(err)
 	}
 	c.JSON(httpCode, resp)
+	c.Abort()
 }

@@ -25,14 +25,13 @@ func Logger(c *gin.Context) {
 	errCode, foundErrCode := codes.GetErrorCodeFromContext(c)
 
 	var event *zerolog.Event
-	if c.Writer.Status() >= 500 {
+	if c.Writer.Status() >= 500 || len(c.Errors) != 0 {
 		event = log.Error()
-	} else if len(c.Errors) != 0 {
-		event = log.Error()
-		event = event.Strs("subcodeErrors", c.Errors.Errors())
-		c.JSON(0, c.Errors.JSON())
 	} else {
 		event = log.Info()
+	}
+	if len(c.Errors) != 0 {
+		event = event.Strs("errors", c.Errors.Errors())
 	}
 	event = event.
 		Str("client-ip", c.ClientIP()).
