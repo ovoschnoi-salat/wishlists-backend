@@ -42,7 +42,7 @@ func Logger(c *gin.Context) {
 		Str("path", c.Request.URL.Path).
 		Str("uuid", uuid.String())
 	if foundErrCode {
-		event = event.Int32("error-code", int32(errCode))
+		event = event.Int32("error_code", int32(errCode))
 	}
 	authData, authorized := GetInitDataFromContext(c)
 	if authorized {

@@ -19,7 +19,7 @@ import (
 const userDataCtxKey = "user_data"
 const initDataCtxKey = "init_data"
 
-func NewMiddleware(secretToken string, db *store.Queries, stage config.Stage) gin.HandlerFunc {
+func NewTgAuthMiddleware(secretToken string, db *store.Queries, stage config.Stage) gin.HandlerFunc {
 	// Define how long since init data generation date init data is valid.
 	expIn := 10 * time.Minute
 

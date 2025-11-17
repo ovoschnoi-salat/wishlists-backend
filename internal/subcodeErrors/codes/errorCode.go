@@ -19,6 +19,8 @@ const (
 	CantSendRequestToYourselfErrCode ErrorCode = 2002
 
 	WishNotFoundErrCode ErrorCode = 3001
+
+	TestErrCode = 6666
 )
 
 const errCodeCtxKey = "ErrorCode"

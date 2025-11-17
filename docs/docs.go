@@ -1275,7 +1275,7 @@ const docTemplate = `{
         "subcodeErrors.Response": {
             "type": "object",
             "properties": {
-                "requestUUID": {
+                "request_uuid": {
                     "type": "string"
                 },
                 "subcode": {

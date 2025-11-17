@@ -150,7 +150,7 @@ definitions:
     type: object
   subcodeErrors.Response:
     properties:
-      requestUUID:
+      request_uuid:
         type: string
       subcode:
         $ref: '#/definitions/codes.ErrorCode'

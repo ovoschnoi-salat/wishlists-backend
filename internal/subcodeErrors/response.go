@@ -9,8 +9,8 @@ import (
 )
 
 type Response struct {
-	Subcode     codes.ErrorCode
-	RequestUUID uuid.UUID
+	Subcode     codes.ErrorCode `json:"subcode"`
+	RequestUUID uuid.UUID       `json:"request_uuid"`
 }
 
 func SendResponse(c *gin.Context, httpCode int, errCode codes.ErrorCode, err error) {
