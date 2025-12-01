@@ -22,17 +22,13 @@ func Logger(c *gin.Context) {
 
 	uuid := uuid2.GetUUIDFromContext(c)
 
-	errCode, foundErrCode := codes.GetErrorCodeFromContext(c)
-
 	var event *zerolog.Event
 	if c.Writer.Status() >= 500 || len(c.Errors) != 0 {
 		event = log.Error()
 	} else {
 		event = log.Info()
 	}
-	if len(c.Errors) != 0 {
-		event = event.Strs("errors", c.Errors.Errors())
-	}
+
 	event = event.
 		Str("client-ip", c.ClientIP()).
 		Int("status", c.Writer.Status()).
@@ -41,13 +37,21 @@ func Logger(c *gin.Context) {
 		Str("pattern", c.FullPath()).
 		Str("path", c.Request.URL.Path).
 		Str("uuid", uuid.String())
+
+	if len(c.Errors) != 0 {
+		event = event.Strs("errors", c.Errors.Errors())
+	}
+
+	errCode, foundErrCode := codes.GetErrorCodeFromContext(c)
 	if foundErrCode {
 		event = event.Int32("error_code", int32(errCode))
 	}
+
 	authData, authorized := GetInitDataFromContext(c)
 	if authorized {
 		event = event.Any("username", authData.User.Username)
 		event = event.Any("user_id", authData.User.ID)
 	}
+
 	event.Send()
 }
