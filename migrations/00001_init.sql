@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS wishlists
     owner_id    BIGINT    NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     title       TEXT      NOT NULL,
     description TEXT      NOT NULL,
-    is_private  BOOLEAN   NOT NULL
+    is_private  BOOLEAN   NOT NULL,
+    share_uuid  TEXT      NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS wishlists_owner_id_from_idx ON wishlists (owner_id);

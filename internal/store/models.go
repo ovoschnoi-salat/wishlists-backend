@@ -38,6 +38,7 @@ type Wishlist struct {
 	Title       string           `json:"title"`
 	Description string           `json:"description"`
 	IsPrivate   bool             `json:"is_private"`
+	ShareUuid   string           `json:"share_uuid"`
 }
 
 type WishlistAccessList struct {

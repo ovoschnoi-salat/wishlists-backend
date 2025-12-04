@@ -65,6 +65,15 @@ definitions:
       username:
         type: string
     type: object
+  service.FriendWishlist:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
   service.FriendWishlistItem:
     properties:
       description:
@@ -119,6 +128,8 @@ definitions:
         type: integer
       is_private:
         type: boolean
+      share_uuid:
+        type: string
       title:
         type: string
     type: object
@@ -283,6 +294,38 @@ paths:
       summary: accepts an incoming friend request
       tags:
       - Friends requests
+  /api/user/friend/wishlist/item:
+    get:
+      parameters:
+      - description: Wish ID
+        in: query
+        name: wish_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.FriendWishlistItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: returns friend wishlist item
+      tags:
+      - Friends
   /api/user/friend/wishlist/items:
     get:
       parameters:
@@ -298,14 +341,7 @@ paths:
           description: OK
           schema:
             items:
-              allOf:
-              - $ref: '#/definitions/service.FriendWishlistItem'
-              - properties:
-                  links:
-                    items:
-                      $ref: '#/definitions/service.WishlistItemLink'
-                    type: array
-                type: object
+              $ref: '#/definitions/service.FriendWishlistItem'
             type: array
         "400":
           description: Bad Request
@@ -321,7 +357,7 @@ paths:
             $ref: '#/definitions/subcodeErrors.Response'
       security:
       - ApiKeyAuth: []
-      summary: returns wishlist items
+      summary: returns friends wishlist items
       tags:
       - Friends
   /api/user/friend/wishlist/wish/reservation/cancel:
@@ -395,7 +431,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/service.Wishlist'
+              $ref: '#/definitions/service.FriendWishlist'
             type: array
         "400":
           description: Bad Request

@@ -13,8 +13,9 @@ import (
 )
 
 type FriendWishlist struct {
-	ID    int64  `json:"id"`
-	Title string `json:"title"`
+	ID          int64  `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 // GetUserFriendWishlists godoc
@@ -27,7 +28,7 @@ type FriendWishlist struct {
 // @Failure 400 {object} subcodeErrors.Response
 // @Failure 401 {object} subcodeErrors.Response
 // @Failure 500 {object} subcodeErrors.Response
-// @Success 200 {array} Wishlist
+// @Success 200 {array} FriendWishlist
 func (s *Service) GetUserFriendWishlists(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
@@ -52,4 +53,20 @@ func (s *Service) GetUserFriendWishlists(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, mapStoreWishlistsToWishlists(wishlists))
+}
+
+func mapStoreWishlistToFriendWishlist(wishlist store.Wishlist) FriendWishlist {
+	return FriendWishlist{
+		ID:          wishlist.ID,
+		Title:       wishlist.Title,
+		Description: wishlist.Description,
+	}
+}
+
+func mapStoreWishlistsToFriendWishlists(wishlist []store.Wishlist) []FriendWishlist {
+	res := make([]FriendWishlist, len(wishlist))
+	for i, w := range wishlist {
+		res[i] = mapStoreWishlistToFriendWishlist(w)
+	}
+	return res
 }

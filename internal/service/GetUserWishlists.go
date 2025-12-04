@@ -16,6 +16,7 @@ type Wishlist struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	IsPrivate   bool   `json:"is_private"`
+	ShareUUID   string `json:"share_uuid"`
 }
 
 // GetUserWishlists godoc
@@ -48,6 +49,7 @@ func mapStoreWishlistToWishlist(wishlist store.Wishlist) Wishlist {
 		Title:       wishlist.Title,
 		Description: wishlist.Description,
 		IsPrivate:   wishlist.IsPrivate,
+		ShareUUID:   wishlist.ShareUuid,
 	}
 }
 

@@ -209,6 +209,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/friend/wishlist/item": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Friends"
+                ],
+                "summary": "returns friend wishlist item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wish ID",
+                        "name": "wish_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.FriendWishlistItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/friend/wishlist/items": {
             "get": {
                 "security": [
@@ -222,7 +273,7 @@ const docTemplate = `{
                 "tags": [
                     "Friends"
                 ],
-                "summary": "returns wishlist items",
+                "summary": "returns friends wishlist items",
                 "parameters": [
                     {
                         "type": "integer",
@@ -238,22 +289,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "allOf": [
-                                    {
-                                        "$ref": "#/definitions/service.FriendWishlistItem"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "links": {
-                                                "type": "array",
-                                                "items": {
-                                                    "$ref": "#/definitions/service.WishlistItemLink"
-                                                }
-                                            }
-                                        }
-                                    }
-                                ]
+                                "$ref": "#/definitions/service.FriendWishlistItem"
                             }
                         }
                     },
@@ -397,7 +433,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/service.Wishlist"
+                                "$ref": "#/definitions/service.FriendWishlist"
                             }
                         }
                     },
@@ -1144,6 +1180,20 @@ const docTemplate = `{
                 }
             }
         },
+        "service.FriendWishlist": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "service.FriendWishlistItem": {
             "type": "object",
             "properties": {
@@ -1226,6 +1276,9 @@ const docTemplate = `{
                 },
                 "is_private": {
                     "type": "boolean"
+                },
+                "share_uuid": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"

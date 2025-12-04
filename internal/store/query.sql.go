@@ -44,7 +44,7 @@ SET updated_at  = now(),
     reserved_by = NULL
 WHERE wishlist_items.id = $1
   AND wishlist_items.reserved_by = $2
-  AND EXISTS(SELECT id, created_at, updated_at, owner_id, title, description, is_private
+  AND EXISTS(SELECT id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
              FROM wishlists
              WHERE wishlists.id = wishlist_items.wishlist_id
                AND EXISTS(SELECT user_id, friend_id, created_at from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
@@ -135,6 +135,30 @@ func (q *Queries) CheckUserHasAccessToPrivateWishlist(ctx context.Context, arg C
 	return i, err
 }
 
+const checkUserHasAccessToWishlist = `-- name: CheckUserHasAccessToWishlist :one
+SELECT id
+FROM wishlists
+WHERE wishlists.id = $1
+  AND EXISTS(SELECT user_id, friend_id, created_at from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
+  AND (wishlists.is_private = false OR
+       EXISTS(SELECT list_id, user_id, owner_id, created_at
+              FROM wishlist_access_list
+              WHERE wishlist_access_list.list_id = $1
+                AND wishlist_access_list.user_id = $2))
+`
+
+type CheckUserHasAccessToWishlistParams struct {
+	ID       int64 `json:"id"`
+	FriendID int64 `json:"friend_id"`
+}
+
+func (q *Queries) CheckUserHasAccessToWishlist(ctx context.Context, arg CheckUserHasAccessToWishlistParams) (int64, error) {
+	row := q.db.QueryRow(ctx, checkUserHasAccessToWishlist, arg.ID, arg.FriendID)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const createFriendsRelationship = `-- name: CreateFriendsRelationship :execrows
 INSERT INTO friends (user_id, friend_id)
 VALUES ($1, $2),
@@ -206,9 +230,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const createWishlist = `-- name: CreateWishlist :one
-INSERT INTO wishlists (owner_id, title, description, is_private)
-VALUES ($1, $2, $3, $4)
-RETURNING id, created_at, updated_at, owner_id, title, description, is_private
+INSERT INTO wishlists (owner_id, title, description, is_private, share_uuid)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
 `
 
 type CreateWishlistParams struct {
@@ -216,6 +240,7 @@ type CreateWishlistParams struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	IsPrivate   bool   `json:"is_private"`
+	ShareUuid   string `json:"share_uuid"`
 }
 
 func (q *Queries) CreateWishlist(ctx context.Context, arg CreateWishlistParams) (Wishlist, error) {
@@ -224,6 +249,7 @@ func (q *Queries) CreateWishlist(ctx context.Context, arg CreateWishlistParams) 
 		arg.Title,
 		arg.Description,
 		arg.IsPrivate,
+		arg.ShareUuid,
 	)
 	var i Wishlist
 	err := row.Scan(
@@ -234,6 +260,7 @@ func (q *Queries) CreateWishlist(ctx context.Context, arg CreateWishlistParams) 
 		&i.Title,
 		&i.Description,
 		&i.IsPrivate,
+		&i.ShareUuid,
 	)
 	return i, err
 }
@@ -376,7 +403,7 @@ const getFriendWishlistItems = `-- name: GetFriendWishlistItems :many
 SELECT id, created_at, updated_at, owner_id, wishlist_id, title, description, price, links, reservable, reserved_by
 FROM wishlist_items
 WHERE wishlist_id = $1
-  AND EXISTS(SELECT id, created_at, updated_at, owner_id, title, description, is_private
+  AND EXISTS(SELECT id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
              FROM wishlists
              WHERE wishlists.id = $1
                AND EXISTS(SELECT user_id, friend_id, created_at from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
@@ -425,7 +452,7 @@ func (q *Queries) GetFriendWishlistItems(ctx context.Context, arg GetFriendWishl
 }
 
 const getFriendWishlists = `-- name: GetFriendWishlists :many
-SELECT id, created_at, updated_at, owner_id, title, description, is_private
+SELECT id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
 FROM wishlists
 WHERE wishlists.owner_id = $1
   AND (is_private = false OR
@@ -457,6 +484,7 @@ func (q *Queries) GetFriendWishlists(ctx context.Context, arg GetFriendWishlists
 			&i.Title,
 			&i.Description,
 			&i.IsPrivate,
+			&i.ShareUuid,
 		); err != nil {
 			return nil, err
 		}
@@ -656,7 +684,7 @@ func (q *Queries) GetUserWishlistItem(ctx context.Context, arg GetUserWishlistIt
 }
 
 const getUserWishlists = `-- name: GetUserWishlists :many
-SELECT id, created_at, updated_at, owner_id, title, description, is_private
+SELECT id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
 FROM wishlists
 WHERE owner_id = $1
 `
@@ -678,6 +706,7 @@ func (q *Queries) GetUserWishlists(ctx context.Context, ownerID int64) ([]Wishli
 			&i.Title,
 			&i.Description,
 			&i.IsPrivate,
+			&i.ShareUuid,
 		); err != nil {
 			return nil, err
 		}
@@ -727,7 +756,7 @@ func (q *Queries) GetWishlistAccessList(ctx context.Context, arg GetWishlistAcce
 }
 
 const getWishlistByWishId = `-- name: GetWishlistByWishId :one
-SELECT id, created_at, updated_at, owner_id, title, description, is_private
+SELECT id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
 FROM wishlists
 WHERE wishlists.id = (SELECT wishlist_id FROM wishlist_items WHERE wishlist_items.id = $1)
 `
@@ -743,6 +772,7 @@ func (q *Queries) GetWishlistByWishId(ctx context.Context, id int64) (Wishlist, 
 		&i.Title,
 		&i.Description,
 		&i.IsPrivate,
+		&i.ShareUuid,
 	)
 	return i, err
 }
@@ -841,7 +871,7 @@ SET updated_at  = now(),
     reserved_by = $2
 WHERE wishlist_items.id = $1
   AND wishlist_items.reserved_by IS NULL
-  AND EXISTS(SELECT id, created_at, updated_at, owner_id, title, description, is_private
+  AND EXISTS(SELECT id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
              FROM wishlists
              WHERE wishlists.id = wishlist_items.wishlist_id
                AND EXISTS(SELECT user_id, friend_id, created_at from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
@@ -945,7 +975,7 @@ SET updated_at  = now(),
     is_private  = $3
 WHERE id = $4
   and owner_id = $5
-RETURNING id, created_at, updated_at, owner_id, title, description, is_private
+RETURNING id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
 `
 
 type UpdateWishlistParams struct {
@@ -973,6 +1003,7 @@ func (q *Queries) UpdateWishlist(ctx context.Context, arg UpdateWishlistParams) 
 		&i.Title,
 		&i.Description,
 		&i.IsPrivate,
+		&i.ShareUuid,
 	)
 	return i, err
 }

@@ -44,6 +44,7 @@ func (s *Service) RegisterHandlers(g *gin.RouterGroup) {
 	g.GET("/user/friends", s.GetFriends)
 	g.GET("/user/friend/wishlists", s.GetUserFriendWishlists)
 	g.GET("/user/friend/wishlist/items", s.GetUserFriendWishlistItems)
+	g.GET("/user/friend/wishlist/item", s.GetUserFriendWishlistItem)
 	g.POST("/user/friend/wishlist/wish/reservation/reserve", s.ReserveFriendWish)
 	g.POST("/user/friend/wishlist/wish/reservation/cancel", s.CancelFriendWishReservation)
 }

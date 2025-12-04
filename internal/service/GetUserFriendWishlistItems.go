@@ -26,7 +26,7 @@ type FriendWishlistItem struct {
 }
 
 // GetUserFriendWishlistItems godoc
-// @Summary returns wishlist items
+// @Summary returns friends wishlist items
 // @Tags Friends
 // @Router /api/user/friend/wishlist/items [get]
 // @Security ApiKeyAuth
@@ -35,7 +35,7 @@ type FriendWishlistItem struct {
 // @Failure 400 {object} subcodeErrors.Response
 // @Failure 401 {object} subcodeErrors.Response
 // @Failure 500 {object} subcodeErrors.Response
-// @Success 200 {array} FriendWishlistItem{links=[]WishlistItemLink}
+// @Success 200 {array} FriendWishlistItem
 func (s *Service) GetUserFriendWishlistItems(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
