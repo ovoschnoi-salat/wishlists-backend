@@ -58,17 +58,13 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 	}
 
 	if req.IsPrivate {
-		for _, UserID := range req.UsersWithAccess {
-			count, err := s.db.InsertWishlistAccessItem(c, store.InsertWishlistAccessItemParams{
-				ListID:  wishlist.ID,
-				OwnerID: authData.User.ID,
-				UserID:  UserID,
-			})
-			if err != nil {
-				_ = c.Error(fmt.Errorf("error inserting wishlist access item: %w", err))
-			} else if count == 0 {
-				_ = c.Error(fmt.Errorf("error inserting wishlist access item: not inserted id %d", UserID))
-			}
+		err := s.db.RecreateWishlistAccessList(c, store.RecreateAccessListParams{
+			WishlistId:    wishlist.ID,
+			OwnerID:       authData.User.ID,
+			NewFriendsIDs: req.UsersWithAccess,
+		})
+		if err != nil {
+			_ = c.Error(fmt.Errorf("error inserting wishlist access items: %w", err))
 		}
 	}
 

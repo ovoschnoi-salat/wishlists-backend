@@ -64,55 +64,13 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 	}
 
 	if req.IsPrivate {
-		accessList, err := s.db.GetWishlistAccessList(c, store.GetWishlistAccessListParams{
-			ListID:  wishlistID,
-			OwnerID: authData.User.ID,
+		err := s.db.RecreateWishlistAccessList(c, store.RecreateAccessListParams{
+			WishlistId:    wishlist.ID,
+			OwnerID:       authData.User.ID,
+			NewFriendsIDs: req.UsersWithAccess,
 		})
 		if err != nil {
-			subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get wishlist %s access list: %w", wishlistIDRaw, err))
-			return
-		}
-		usersWithAccessOld := make(map[int64]struct{}, len(accessList))
-		for _, accessItem := range accessList {
-			usersWithAccessOld[accessItem.UserID] = struct{}{}
-		}
-		usersWithAccessNew := make(map[int64]struct{}, len(req.UsersWithAccess))
-		for _, usersWithAccess := range req.UsersWithAccess {
-			usersWithAccessNew[usersWithAccess] = struct{}{}
-		}
-
-		for userID := range usersWithAccessOld {
-			if _, ok := usersWithAccessNew[userID]; !ok {
-				count, err := s.db.DeleteWishlistAccessItem(c, store.DeleteWishlistAccessItemParams{
-					ListID: wishlistID,
-					UserID: userID,
-				})
-				if err != nil {
-					subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting access for user %d from wishlist %s: %w", userID, wishlistIDRaw, err))
-					return
-				}
-				if count == 0 {
-					subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting access for user %d from wishlist %s: no rows affected", userID, wishlistIDRaw))
-					return
-				}
-			}
-		}
-		for userID := range usersWithAccessNew {
-			if _, ok := usersWithAccessOld[userID]; !ok {
-				count, err := s.db.InsertWishlistAccessItem(c, store.InsertWishlistAccessItemParams{
-					ListID:  wishlistID,
-					OwnerID: authData.User.ID,
-					UserID:  userID,
-				})
-				if err != nil {
-					subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error inserting access for user %d to wishlist %s: %w", userID, wishlistIDRaw, err))
-					return
-				}
-				if count == 0 {
-					subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error inserting access for user %d to wishlist %s: no rows affected", userID, wishlistIDRaw))
-					return
-				}
-			}
+			_ = c.Error(fmt.Errorf("error updating wishlist access items: %w", err))
 		}
 	} else {
 		err := s.db.DeleteWishlistAccessItems(c, wishlistID)
