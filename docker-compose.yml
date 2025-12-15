@@ -63,6 +63,7 @@ services:
     environment:
       PG_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@wishlists-db:5432/wishlists"
       LISTEN_ADDR: ":${BACKEND_PORT}"
+      STAGE: "${STAGE}"
     depends_on:
       - db
     networks:
