@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./configs/loki-config.yml:/etc/loki/local-config.yaml
-      - .data/.loki_data:/tmp/loki
+      - "${LOKI_DATA_FOLDER}:/tmp/loki"
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - backend_network
@@ -14,10 +14,6 @@ services:
     image: grafana/alloy:latest
     container_name: wishlists-alloy
     restart: unless-stopped
-    ports:
-      - "12345:12345"
-      - "4317:4317"
-      - "4318:4318"
     environment:
       ALLOY_DEPLOY_MODE: docker
     volumes:
@@ -33,8 +29,6 @@ services:
     image: grafana/grafana:latest
     container_name: wishlists-grafana
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin123
@@ -53,8 +47,6 @@ services:
       POSTGRES_DB: "wishlists"
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASS}"
-    ports:
-      - "5432:5432"
     volumes:
       - "${POSTGRES_DATA_FOLDER}:/var/lib/postgresql/data"
     networks:
@@ -69,7 +61,7 @@ services:
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     environment:
-      PG_DSN: "postgresql://postgres:postgres@wishlists-db:5432/wishlists"
+      PG_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@wishlists-db:5432/wishlists"
       LISTEN_ADDR: ":${BACKEND_PORT}"
     depends_on:
       - db
@@ -78,7 +70,6 @@ services:
 
 volumes:
   grafana-storage:
-  loki-storage:
 
 networks:
   backend_network:

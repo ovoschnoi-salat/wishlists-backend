@@ -1,3 +1,48 @@
+# Команды для управления сервисами
+
+# Собирает и перезапускает сервисы
+.PHONY: deploy-prod
+deploy-prod:
+ifdef service
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build $(service)
+else
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+endif
+	@echo "services deployed!"
+	@echo ""
+
+.PHONY: stop-prod
+stop-prod:
+ifdef service
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml down $(service)
+else
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+endif
+	@echo "services stopped!"
+	@echo ""
+
+
+# Собирает и перезапускает сервисы
+.PHONY: deploy-dev
+deploy-dev:
+ifdef service
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build $(service)
+else
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+endif
+	@echo "services deployed!"
+	@echo ""
+
+.PHONY: stop-dev
+stop-dev:
+ifdef service
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml down $(service)
+else
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+endif
+	@echo "services stopped!"
+	@echo ""
+
 
 .PHONY: install-utils
 install-utils:
