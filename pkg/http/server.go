@@ -34,7 +34,8 @@ func (s *Server) Run() error {
 	} else {
 		err = s.srv.ListenAndServe()
 	}
-	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+	//if err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err != nil {
 		return err
 	}
 	return nil

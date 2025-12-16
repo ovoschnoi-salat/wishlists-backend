@@ -4,3 +4,7 @@
 Dockerfile
 vendor
 .gitignore
+.env*
+docker-compose.*
+Makefile
+README.md
