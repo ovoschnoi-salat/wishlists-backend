@@ -8,6 +8,7 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_CERT_KEY=/etc/grafana/grafana.key
       - GF_SERVER_CERT_FILE=/etc/grafana/grafana.crt
+      - GF_SERVER_PROTOCOL=https
     volumes:
       - "${TLS_CERT_FILE}:/etc/grafana/grafana.crt:ro"
       - "${TLS_KEY_FILE}:/etc/grafana/grafana.key:ro"
