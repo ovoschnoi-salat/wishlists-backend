@@ -44,7 +44,13 @@ func main() {
 	ctx := context.Background()
 	dsn := os.Getenv("PG_DSN")
 
-	pool, err := pgxpool.New(ctx, dsn)
+	dbCfg, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		log.Fatal().Err(err).Msg("error parsing database dsn")
+	}
+	dbCfg.MinIdleConns = 1
+
+	pool, err := pgxpool.NewWithConfig(ctx, dbCfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error connecting to database")
 	}
