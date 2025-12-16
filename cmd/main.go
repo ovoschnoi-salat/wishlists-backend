@@ -73,7 +73,13 @@ func main() {
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	}
 
-	serviceObj.RegisterHandlers(router.Group("", middlewares.NewTgAuthMiddleware("", storeObj, cfg.Stage), middlewares.ErrorGenerator))
+	authGroup := router.Group("", middlewares.NewTgAuthMiddleware("", storeObj, cfg.Stage))
+
+	if cfg.Stage == config.DEV {
+		authGroup.Use(middlewares.ErrorGenerator)
+	}
+
+	serviceObj.RegisterHandlers(authGroup)
 
 	httpServer := http.NewServer(cfg.HttpServer, router)
 
