@@ -73,7 +73,7 @@ func main() {
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	}
 
-	authGroup := router.Group("", middlewares.NewTgAuthMiddleware("", storeObj, cfg.Stage))
+	authGroup := router.Group("", middlewares.NewTgAuthMiddleware(cfg.Bot.Token, storeObj, cfg.Stage))
 
 	if cfg.Stage == config.DEV {
 		authGroup.Use(middlewares.ErrorGenerator)
