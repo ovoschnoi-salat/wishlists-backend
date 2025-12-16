@@ -6,6 +6,9 @@ services:
       - GF_SECURITY_ADMIN_USER=admin123
       - GF_SECURITY_ADMIN_PASSWORD=sdkfvjb3489gf
       - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - "${TLS_CERT_FILE}:/etc/grafana/grafana.crt:ro"
+      - "${TLS_KEY_FILE}:/etc/grafana/grafana.key:ro"
 
   backend:
     environment:
