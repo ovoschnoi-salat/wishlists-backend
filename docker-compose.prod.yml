@@ -6,3 +6,10 @@ services:
       - GF_SECURITY_ADMIN_USER=admin123
       - GF_SECURITY_ADMIN_PASSWORD=sdkfvjb3489gf
       - GF_USERS_ALLOW_SIGN_UP=false
+
+  backend:
+    environment:
+      TLS_CERT_FILE: "${TLS_CERT_FILE}}"
+      TLS_KEY_FILE: "${TLS_KEY_FILE}"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro

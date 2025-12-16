@@ -12,6 +12,8 @@ import (
 type ServerConfig struct {
 	ShutdownTimeout int    `env:"SHUTDOWN_TIMEOUT"`
 	ListenAddress   string `env:"LISTEN_ADDR,required"`
+	TLSCertFile     string `env:"TLS_CERT_FILE"`
+	TLSKeyFile      string `env:"TLS_KEY_FILE"`
 }
 
 type Server struct {
@@ -26,7 +28,13 @@ func NewServer(cfg ServerConfig, h http.Handler) *Server {
 
 func (s *Server) Run() error {
 	log.Info().Msg("starting server, listening on " + s.srv.Addr)
-	if err := s.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	var err error
+	if s.cfg.TLSCertFile != "" && s.cfg.TLSKeyFile != "" {
+		err = s.srv.ListenAndServeTLS(s.cfg.TLSCertFile, s.cfg.TLSKeyFile)
+	} else {
+		err = s.srv.ListenAndServe()
+	}
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	return nil
