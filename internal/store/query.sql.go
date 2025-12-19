@@ -135,30 +135,6 @@ func (q *Queries) CheckUserHasAccessToPrivateWishlist(ctx context.Context, arg C
 	return i, err
 }
 
-const checkUserHasAccessToWishlist = `-- name: CheckUserHasAccessToWishlist :one
-SELECT id
-FROM wishlists
-WHERE wishlists.id = $1
-  AND EXISTS(SELECT user_id, friend_id, created_at from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
-  AND (wishlists.is_private = false OR
-       EXISTS(SELECT list_id, user_id, owner_id, created_at
-              FROM wishlist_access_list
-              WHERE wishlist_access_list.list_id = $1
-                AND wishlist_access_list.user_id = $2))
-`
-
-type CheckUserHasAccessToWishlistParams struct {
-	ID       int64 `json:"id"`
-	FriendID int64 `json:"friend_id"`
-}
-
-func (q *Queries) CheckUserHasAccessToWishlist(ctx context.Context, arg CheckUserHasAccessToWishlistParams) (int64, error) {
-	row := q.db.QueryRow(ctx, checkUserHasAccessToWishlist, arg.ID, arg.FriendID)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
-}
-
 const createFriendsRelationship = `-- name: CreateFriendsRelationship :execrows
 INSERT INTO friends (user_id, friend_id)
 VALUES ($1, $2),
@@ -878,7 +854,7 @@ WHERE wishlist_items.id = $1
                AND (wishlists.is_private = false OR
                     EXISTS(SELECT list_id, user_id, owner_id, created_at
                            FROM wishlist_access_list
-                           WHERE wishlist_access_list.list_id = $1
+                           WHERE wishlist_access_list.list_id = wishlists.id
                              AND wishlist_access_list.user_id = $2)))
 `
 
