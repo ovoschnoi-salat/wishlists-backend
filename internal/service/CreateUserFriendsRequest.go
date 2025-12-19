@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -37,6 +38,9 @@ func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.CantSendRequestToYourselfErrCode, nil)
 		return
 	}
+
+	friendUsernameStr = strings.TrimPrefix(friendUsernameStr, "@")
+	friendUsernameStr = strings.ToLower(friendUsernameStr)
 
 	friend, err := s.db.GetUserByUsername(c, friendUsernameStr)
 	if err != nil {
