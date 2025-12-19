@@ -8,3 +8,4 @@ vendor
 docker-compose.*
 Makefile
 README.md
+localhost.*

@@ -16,3 +16,11 @@ services:
   db:
     ports:
       - "5432:5432"
+
+  backend:
+    environment:
+      TLS_CERT_FILE: "/cert.pem"
+      TLS_KEY_FILE: "/key.pem"
+    volumes:
+      - "${TLS_CERT_FILE}:/cert.pem:ro"
+      - "${TLS_KEY_FILE}:/key.pem:ro"

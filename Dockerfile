@@ -16,7 +16,6 @@ FROM debian:11-slim AS build-release-stage
 
 WORKDIR /
 
-COPY entrypoint.sh /
 COPY migrations /migrations
 
 COPY --from=build-stage /app /app
