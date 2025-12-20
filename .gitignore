@@ -5,4 +5,4 @@ bin/
 vendor
 .env
 vendor/
-localhost.*
+localhost*
