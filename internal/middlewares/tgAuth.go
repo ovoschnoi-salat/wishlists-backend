@@ -21,7 +21,7 @@ const initDataCtxKey = "init_data"
 
 func NewTgAuthMiddleware(secretToken string, db *store.Queries, stage config.Stage) gin.HandlerFunc {
 	// Define how long since init data generation date init data is valid.
-	expIn := 10 * time.Minute
+	expIn := 30 * time.Minute
 
 	return func(c *gin.Context) {
 		initData := c.GetHeader("authorization")
