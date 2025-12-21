@@ -51,7 +51,7 @@ WHERE wishlist_items.id = $1
                AND (wishlists.is_private = false OR
                     EXISTS(SELECT list_id, user_id, owner_id, created_at
                            FROM wishlist_access_list
-                           WHERE wishlist_access_list.list_id = $1
+                           WHERE wishlist_access_list.list_id = wishlists.id
                              AND wishlist_access_list.user_id = $2)))
 `
 
@@ -625,6 +625,33 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.DisplayedName,
 		&i.PhotoUrl,
 		&i.OpenToRequests,
+	)
+	return i, err
+}
+
+const getUserWishlist = `-- name: GetUserWishlist :one
+SELECT id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
+FROM wishlists
+WHERE id = $1 AND owner_id = $2
+`
+
+type GetUserWishlistParams struct {
+	ID      int64 `json:"id"`
+	OwnerID int64 `json:"owner_id"`
+}
+
+func (q *Queries) GetUserWishlist(ctx context.Context, arg GetUserWishlistParams) (Wishlist, error) {
+	row := q.db.QueryRow(ctx, getUserWishlist, arg.ID, arg.OwnerID)
+	var i Wishlist
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.OwnerID,
+		&i.Title,
+		&i.Description,
+		&i.IsPrivate,
+		&i.ShareUuid,
 	)
 	return i, err
 }

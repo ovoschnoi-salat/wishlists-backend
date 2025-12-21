@@ -67,6 +67,15 @@ func (s *Service) CreateUserWishlistItem(c *gin.Context) {
 		return
 	}
 
+	_, err = s.db.GetUserWishlist(c, store.GetUserWishlistParams{
+		ID:      req.WishlistID,
+		OwnerID: authData.User.ID,
+	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating item: %w", err))
+		return
+	}
+
 	item, err := s.db.CreateWishlistItem(c, store.CreateWishlistItemParams{
 		WishlistID:  req.WishlistID,
 		OwnerID:     authData.User.ID,

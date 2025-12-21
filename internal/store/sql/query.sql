@@ -23,6 +23,11 @@ WHERE id = $1
 RETURNING *;
 
 
+-- name: GetUserWishlist :one
+SELECT *
+FROM wishlists
+WHERE id = $1 AND owner_id = $2;
+
 -- name: GetUserWishlists :many
 SELECT *
 FROM wishlists
@@ -198,7 +203,7 @@ WHERE wishlist_items.id = $1
                AND (wishlists.is_private = false OR
                     EXISTS(SELECT *
                            FROM wishlist_access_list
-                           WHERE wishlist_access_list.list_id = $1
+                           WHERE wishlist_access_list.list_id = wishlists.id
                              AND wishlist_access_list.user_id = $2)));
 
 -- name: DeleteWishlistItem :execrows
