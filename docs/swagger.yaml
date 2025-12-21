@@ -567,6 +567,38 @@ paths:
       summary: returns user's settings
       tags:
       - User
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: request body
+        in: body
+        name: wishlist
+        required: true
+        schema:
+          $ref: '#/definitions/service.UserSettings'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: updates user
+      tags:
+      - User
   /api/user/wish:
     delete:
       consumes:

@@ -22,6 +22,12 @@ SET updated_at       = now(),
 WHERE id = $1
 RETURNING *;
 
+-- name: UpdateUserSettings :execrows
+UPDATE users
+SET updated_at       = now(),
+    open_to_requests = $2
+WHERE id = $1;
+
 
 -- name: GetUserWishlist :one
 SELECT *

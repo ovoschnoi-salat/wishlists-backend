@@ -970,6 +970,26 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	return i, err
 }
 
+const updateUserSettings = `-- name: UpdateUserSettings :execrows
+UPDATE users
+SET updated_at       = now(),
+    open_to_requests = $2
+WHERE id = $1
+`
+
+type UpdateUserSettingsParams struct {
+	ID             int64 `json:"id"`
+	OpenToRequests bool  `json:"open_to_requests"`
+}
+
+func (q *Queries) UpdateUserSettings(ctx context.Context, arg UpdateUserSettingsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateUserSettings, arg.ID, arg.OpenToRequests)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const updateWishlist = `-- name: UpdateWishlist :one
 UPDATE wishlists
 SET updated_at  = now(),
