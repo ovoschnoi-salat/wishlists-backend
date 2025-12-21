@@ -611,6 +611,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/settings": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "returns user's settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.UserSettings"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/wish": {
             "delete": {
                 "security": [
@@ -1313,6 +1343,14 @@ const docTemplate = `{
                 },
                 "photo_url": {
                     "type": "string"
+                }
+            }
+        },
+        "service.UserSettings": {
+            "type": "object",
+            "properties": {
+                "open_to_requests": {
+                    "type": "boolean"
                 }
             }
         },

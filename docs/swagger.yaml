@@ -120,6 +120,11 @@ definitions:
       photo_url:
         type: string
     type: object
+  service.UserSettings:
+    properties:
+      open_to_requests:
+        type: boolean
+    type: object
   service.Wishlist:
     properties:
       description:
@@ -544,6 +549,24 @@ paths:
       summary: returns user's incoming friends requests
       tags:
       - Friends requests
+  /api/user/settings:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.UserSettings'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: returns user's settings
+      tags:
+      - User
   /api/user/wish:
     delete:
       consumes:
