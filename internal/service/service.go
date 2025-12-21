@@ -22,6 +22,8 @@ func (s *Service) RegisterHandlers(g *gin.RouterGroup) {
 	g = g.Group("/api")
 
 	g.PATCH("/user", s.UpdateUser)
+	g.GET("/user/settings", s.GetUserSettings)
+	g.PATCH("/user/settings", s.UpdateUserSettings)
 
 	g.GET("/user/wishlists", s.GetUserWishlists)
 	g.POST("/user/wishlist", s.CreateWishlist)
