@@ -1400,6 +1400,9 @@ const docTemplate = `{
         "service.UserSettings": {
             "type": "object",
             "properties": {
+                "displayed_name": {
+                    "type": "string"
+                },
                 "open_to_requests": {
                     "type": "boolean"
                 }

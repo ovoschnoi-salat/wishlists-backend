@@ -57,16 +57,12 @@ func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 		return
 	}
 
-	count, err := s.db.CreateFriendsRequest(c, store.CreateFriendsRequestParams{
+	_, err = s.db.CreateFriendsRequest(c, store.CreateFriendsRequestParams{
 		UserIDFrom: authData.User.ID,
 		UserIDTo:   friend.ID,
 	})
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating friendship: %w", err))
-		return
-	}
-	if count == 0 {
-		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, errors.New("error creating friendship: no rows updated"))
 		return
 	}
 

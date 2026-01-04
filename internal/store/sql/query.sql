@@ -62,7 +62,7 @@ where id = $1
 
 -- name: CreateFriendsRequest :execrows
 INSERT INTO friends_requests (user_id_from, user_id_to)
-VALUES ($1, $2);
+VALUES ($1, $2) ON CONFLICT DO NOTHING;
 
 -- name: GetIncomingFriendsRequests :many
 SELECT *
@@ -92,13 +92,13 @@ WHERE id IN (SELECT friend_id FROM friends WHERE user_id = $1);
 -- name: AcceptFriendsRequest :execrows
 WITH deleted_request AS (
     DELETE FROM friends_requests
-        WHERE user_id_to = $1 AND user_id_from = $2
+        WHERE user_id_to = $1 AND user_id_from = $2 OR user_id_to = $2 AND user_id_from = $1
         RETURNING user_id_to, user_id_from)
 INSERT
 INTO friends (user_id, friend_id)
 SELECT user_id_from, user_id_to
 FROM deleted_request
-UNION ALL
+UNION
 SELECT user_id_to, user_id_from
 FROM deleted_request;
 

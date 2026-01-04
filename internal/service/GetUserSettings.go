@@ -12,7 +12,8 @@ import (
 )
 
 type UserSettings struct {
-	OpenToRequests bool `json:"open_to_requests"`
+	DisplayedName  string `json:"displayed_name"`
+	OpenToRequests bool   `json:"open_to_requests"`
 }
 
 // GetUserSettings godoc
@@ -35,6 +36,7 @@ func (s *Service) GetUserSettings(c *gin.Context) {
 
 func mapStoreUserToUserSettings(user store.User) UserSettings {
 	return UserSettings{
+		DisplayedName:  user.DisplayedName,
 		OpenToRequests: user.OpenToRequests,
 	}
 }
