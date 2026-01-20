@@ -13,14 +13,14 @@ const (
 	NotFoundErrCode                 ErrorCode = 1003
 	NoAccessErrCode                 ErrorCode = 1004
 	InvalidRequestErrCode           ErrorCode = 1005
-	InvalidRequestParametersErrCode ErrorCode = 1005
+	InvalidRequestParametersErrCode ErrorCode = 1006
 
 	FriendNotFoundErrCode            ErrorCode = 2001
 	CantSendRequestToYourselfErrCode ErrorCode = 2002
 
 	WishNotFoundErrCode ErrorCode = 3001
 
-	TestErrCode = 6666
+	TestErrCode ErrorCode = 6666
 )
 
 const errCodeCtxKey = "ErrorCode"
@@ -36,4 +36,11 @@ func GetErrorCodeFromContext(c *gin.Context) (ErrorCode, bool) {
 		}
 	}
 	return UnknownErrCode, false
+}
+
+func abs[T ~int | ~int8 | ~int16 | ~int32 | ~int64](v T) T {
+	if v < 0 {
+		return -v
+	}
+	return v
 }

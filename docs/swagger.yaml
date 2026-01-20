@@ -7,10 +7,11 @@ definitions:
     - 1003
     - 1004
     - 1005
-    - 1005
+    - 1006
     - 2001
     - 2002
     - 3001
+    - 6666
     format: int32
     type: integer
     x-enum-varnames:
@@ -24,6 +25,7 @@ definitions:
     - FriendNotFoundErrCode
     - CantSendRequestToYourselfErrCode
     - WishNotFoundErrCode
+    - TestErrCode
   service.CreateWishlistItemRequest:
     properties:
       description:

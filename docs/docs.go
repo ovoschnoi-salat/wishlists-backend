@@ -1231,10 +1231,11 @@ const docTemplate = `{
                 1003,
                 1004,
                 1005,
-                1005,
+                1006,
                 2001,
                 2002,
-                3001
+                3001,
+                6666
             ],
             "x-enum-varnames": [
                 "UnknownErrCode",
@@ -1246,7 +1247,8 @@ const docTemplate = `{
                 "InvalidRequestParametersErrCode",
                 "FriendNotFoundErrCode",
                 "CantSendRequestToYourselfErrCode",
-                "WishNotFoundErrCode"
+                "WishNotFoundErrCode",
+                "TestErrCode"
             ]
         },
         "service.CreateWishlistItemRequest": {
