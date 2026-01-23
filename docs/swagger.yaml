@@ -217,6 +217,38 @@ paths:
       summary: updates user
       tags:
       - User
+  /api/user/friend:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Friend ID
+        in: query
+        name: friend_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: creates wishlist
+      tags:
+      - Friends
   /api/user/friend/request:
     post:
       parameters:

@@ -115,6 +115,12 @@ FROM friends
 WHERE user_id = $1
   AND friend_id = $2;
 
+-- name: DeleteFriendship :execrows
+DELETE
+FROM friends
+WHERE user_id = $1 AND friend_id = $2 OR user_id = $2 AND friend_id = $1;
+
+
 -- name: GetWishlistItems :many
 SELECT *
 FROM wishlist_items

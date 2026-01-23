@@ -284,6 +284,25 @@ func (q *Queries) CreateWishlistItem(ctx context.Context, arg CreateWishlistItem
 	return i, err
 }
 
+const deleteFriendship = `-- name: DeleteFriendship :execrows
+DELETE
+FROM friends
+WHERE user_id = $1 AND friend_id = $2 OR user_id = $2 AND friend_id = $1
+`
+
+type DeleteFriendshipParams struct {
+	UserID   int64 `json:"user_id"`
+	FriendID int64 `json:"friend_id"`
+}
+
+func (q *Queries) DeleteFriendship(ctx context.Context, arg DeleteFriendshipParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteFriendship, arg.UserID, arg.FriendID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteWishlist = `-- name: DeleteWishlist :execrows
 DELETE
 FROM wishlists
