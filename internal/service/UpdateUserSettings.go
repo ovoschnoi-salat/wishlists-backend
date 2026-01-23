@@ -39,6 +39,7 @@ func (s *Service) UpdateUserSettings(c *gin.Context) {
 
 	count, err := s.db.UpdateUserSettings(c, store.UpdateUserSettingsParams{
 		ID:             authData.User.ID,
+		DisplayedName:  req.DisplayedName,
 		OpenToRequests: req.OpenToRequests,
 	})
 	if err != nil {

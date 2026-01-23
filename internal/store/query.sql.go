@@ -992,17 +992,19 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 const updateUserSettings = `-- name: UpdateUserSettings :execrows
 UPDATE users
 SET updated_at       = now(),
-    open_to_requests = $2
+    displayed_name = $2,
+    open_to_requests = $3
 WHERE id = $1
 `
 
 type UpdateUserSettingsParams struct {
-	ID             int64 `json:"id"`
-	OpenToRequests bool  `json:"open_to_requests"`
+	ID             int64  `json:"id"`
+	DisplayedName  string `json:"displayed_name"`
+	OpenToRequests bool   `json:"open_to_requests"`
 }
 
 func (q *Queries) UpdateUserSettings(ctx context.Context, arg UpdateUserSettingsParams) (int64, error) {
-	result, err := q.db.Exec(ctx, updateUserSettings, arg.ID, arg.OpenToRequests)
+	result, err := q.db.Exec(ctx, updateUserSettings, arg.ID, arg.DisplayedName, arg.OpenToRequests)
 	if err != nil {
 		return 0, err
 	}

@@ -64,8 +64,6 @@ func NewTgAuthMiddleware(secretToken string, db *store.Queries, stage config.Sta
 					name = data.User.FirstName
 				}
 				req.DisplayedName = name
-			} else {
-				req.DisplayedName = "@" + req.Username
 			}
 			user, err = db.CreateUser(c, req)
 			if err != nil {

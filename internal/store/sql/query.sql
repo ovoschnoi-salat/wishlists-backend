@@ -25,7 +25,8 @@ RETURNING *;
 -- name: UpdateUserSettings :execrows
 UPDATE users
 SET updated_at       = now(),
-    open_to_requests = $2
+    displayed_name = $2,
+    open_to_requests = $3
 WHERE id = $1;
 
 
