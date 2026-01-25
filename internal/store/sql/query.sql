@@ -30,6 +30,11 @@ SET updated_at       = now(),
 WHERE id = $1;
 
 
+-- name: GetSharedWishlist :one
+SELECT *
+FROM wishlists
+WHERE share_uuid = $1;
+
 -- name: GetUserWishlist :one
 SELECT *
 FROM wishlists
@@ -115,6 +120,11 @@ SELECT count(*)
 FROM friends
 WHERE user_id = $1
   AND friend_id = $2;
+
+-- name: AddToFriends :execrows
+INSERT
+INTO friends (user_id, friend_id)
+VALUES ($1, $2), ($2, $1);
 
 -- name: DeleteFriendship :execrows
 DELETE

@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS users
 --     language         TEXT      NOT NULL,
     open_to_requests BOOLEAN   NOT NULL DEFAULT TRUE
 );
-
 CREATE INDEX IF NOT EXISTS users_username_idx ON users (username);
+
 
 CREATE TABLE IF NOT EXISTS friends
 (
@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS friends
     PRIMARY KEY (user_id, friend_id)
 );
 
+
 CREATE TABLE IF NOT EXISTS friends_requests
 (
     user_id_to   BIGINT    NOT NULL REFERENCES users (id) ON DELETE CASCADE,
@@ -32,8 +33,8 @@ CREATE TABLE IF NOT EXISTS friends_requests
 
     PRIMARY KEY (user_id_to, user_id_from)
 );
-
 CREATE INDEX IF NOT EXISTS friends_requests_user_id_from_idx ON friends_requests (user_id_from);
+
 
 CREATE TABLE IF NOT EXISTS wishlists
 (
@@ -44,10 +45,11 @@ CREATE TABLE IF NOT EXISTS wishlists
     title       TEXT      NOT NULL,
     description TEXT      NOT NULL,
     is_private  BOOLEAN   NOT NULL,
-    share_uuid  TEXT      NOT NULL
+    share_uuid  UUID      NOT NULL DEFAULT gen_random_uuid()
 );
+CREATE INDEX IF NOT EXISTS wishlists_owner_id_idx ON wishlists (owner_id);
+CREATE INDEX IF NOT EXISTS wishlists_share_uuid_idx ON wishlists (share_uuid);
 
-CREATE INDEX IF NOT EXISTS wishlists_owner_id_from_idx ON wishlists (owner_id);
 
 CREATE TABLE IF NOT EXISTS wishlist_access_list
 (
@@ -58,8 +60,8 @@ CREATE TABLE IF NOT EXISTS wishlist_access_list
 
     PRIMARY KEY (list_id, user_id)
 );
-
 CREATE INDEX IF NOT EXISTS wishlist_access_list_owner_id_user_id_idx ON wishlist_access_list (owner_id, user_id);
+
 
 CREATE TABLE IF NOT EXISTS wishlist_items
 (
@@ -75,9 +77,7 @@ CREATE TABLE IF NOT EXISTS wishlist_items
     reservable  BOOLEAN   NOT NULL,
     reserved_by BIGINT    REFERENCES users (id) ON DELETE SET NULL
 );
-
 CREATE INDEX IF NOT EXISTS wishlists_items_owner_id_from_idx ON wishlist_items (owner_id);
-
 CREATE INDEX IF NOT EXISTS wishlist_items_wishlist_id_idx ON wishlist_items (wishlist_id);
 
 -- +goose StatementEnd

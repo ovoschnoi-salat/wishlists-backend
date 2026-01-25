@@ -49,7 +49,7 @@ func mapStoreWishlistToWishlist(wishlist store.Wishlist) Wishlist {
 		Title:       wishlist.Title,
 		Description: wishlist.Description,
 		IsPrivate:   wishlist.IsPrivate,
-		ShareUUID:   wishlist.ShareUuid,
+		ShareUUID:   wishlist.ShareUuid.String(),
 	}
 }
 

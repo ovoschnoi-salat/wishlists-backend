@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type CreateWishlistRequest struct {
@@ -50,7 +49,6 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 		Title:       req.Title,
 		Description: req.Description,
 		IsPrivate:   req.IsPrivate,
-		ShareUuid:   uuid.New().String(),
 	})
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating wishlist: %w", err))

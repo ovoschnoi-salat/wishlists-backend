@@ -38,6 +38,25 @@ func (q *Queries) AcceptFriendsRequest(ctx context.Context, arg AcceptFriendsReq
 	return result.RowsAffected(), nil
 }
 
+const addToFriends = `-- name: AddToFriends :execrows
+INSERT
+INTO friends (user_id, friend_id)
+VALUES ($1, $2), ($2, $1)
+`
+
+type AddToFriendsParams struct {
+	UserID   int64 `json:"user_id"`
+	FriendID int64 `json:"friend_id"`
+}
+
+func (q *Queries) AddToFriends(ctx context.Context, arg AddToFriendsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, addToFriends, arg.UserID, arg.FriendID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const cancelWishlistItemReservation = `-- name: CancelWishlistItemReservation :execrows
 UPDATE wishlist_items
 SET updated_at  = now(),
@@ -212,11 +231,11 @@ RETURNING id, created_at, updated_at, owner_id, title, description, is_private, 
 `
 
 type CreateWishlistParams struct {
-	OwnerID     int64  `json:"owner_id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	IsPrivate   bool   `json:"is_private"`
-	ShareUuid   string `json:"share_uuid"`
+	OwnerID     int64       `json:"owner_id"`
+	Title       string      `json:"title"`
+	Description string      `json:"description"`
+	IsPrivate   bool        `json:"is_private"`
+	ShareUuid   pgtype.UUID `json:"share_uuid"`
 }
 
 func (q *Queries) CreateWishlist(ctx context.Context, arg CreateWishlistParams) (Wishlist, error) {
@@ -604,6 +623,28 @@ func (q *Queries) GetOutcomingFriendsRequests(ctx context.Context, userIDFrom in
 		return nil, err
 	}
 	return items, nil
+}
+
+const getSharedWishlist = `-- name: GetSharedWishlist :one
+SELECT id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
+FROM wishlists
+WHERE share_uuid = $1
+`
+
+func (q *Queries) GetSharedWishlist(ctx context.Context, shareUuid pgtype.UUID) (Wishlist, error) {
+	row := q.db.QueryRow(ctx, getSharedWishlist, shareUuid)
+	var i Wishlist
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.OwnerID,
+		&i.Title,
+		&i.Description,
+		&i.IsPrivate,
+		&i.ShareUuid,
+	)
+	return i, err
 }
 
 const getUser = `-- name: GetUser :one
