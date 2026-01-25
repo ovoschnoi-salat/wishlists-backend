@@ -225,17 +225,16 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const createWishlist = `-- name: CreateWishlist :one
-INSERT INTO wishlists (owner_id, title, description, is_private, share_uuid)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO wishlists (owner_id, title, description, is_private)
+VALUES ($1, $2, $3, $4)
 RETURNING id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
 `
 
 type CreateWishlistParams struct {
-	OwnerID     int64       `json:"owner_id"`
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
-	IsPrivate   bool        `json:"is_private"`
-	ShareUuid   pgtype.UUID `json:"share_uuid"`
+	OwnerID     int64  `json:"owner_id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	IsPrivate   bool   `json:"is_private"`
 }
 
 func (q *Queries) CreateWishlist(ctx context.Context, arg CreateWishlistParams) (Wishlist, error) {
@@ -244,7 +243,6 @@ func (q *Queries) CreateWishlist(ctx context.Context, arg CreateWishlistParams) 
 		arg.Title,
 		arg.Description,
 		arg.IsPrivate,
-		arg.ShareUuid,
 	)
 	var i Wishlist
 	err := row.Scan(

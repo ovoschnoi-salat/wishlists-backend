@@ -46,8 +46,8 @@ FROM wishlists
 WHERE owner_id = $1;
 
 -- name: CreateWishlist :one
-INSERT INTO wishlists (owner_id, title, description, is_private, share_uuid)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO wishlists (owner_id, title, description, is_private)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: UpdateWishlist :one
