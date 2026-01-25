@@ -18,7 +18,7 @@ import (
 // @Tags Friends
 // @Router /api/shared/wishlist [get]
 // @Security ApiKeyAuth
-// @Param wishlist_uuid query int true "Wishlist UUID"
+// @Param wishlist_uuid query string true "Wishlist UUID"
 // @Produce json
 // @Failure 400 {object} subcodeErrors.Response
 // @Failure 401 {object} subcodeErrors.Response

@@ -189,7 +189,7 @@ paths:
         in: query
         name: wishlist_uuid
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:

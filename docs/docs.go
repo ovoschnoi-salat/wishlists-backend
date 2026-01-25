@@ -31,7 +31,7 @@ const docTemplate = `{
                 "summary": "returns shared wishlist",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Wishlist UUID",
                         "name": "wishlist_uuid",
                         "in": "query",
