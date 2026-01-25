@@ -41,7 +41,7 @@ func (q *Queries) AcceptFriendsRequest(ctx context.Context, arg AcceptFriendsReq
 const addToFriends = `-- name: AddToFriends :execrows
 INSERT
 INTO friends (user_id, friend_id)
-VALUES ($1, $2), ($2, $1)
+VALUES ($1, $2), ($2, $1) ON CONFLICT DO NOTHING
 `
 
 type AddToFriendsParams struct {
@@ -909,7 +909,7 @@ func (q *Queries) GetWishlistItems(ctx context.Context, arg GetWishlistItemsPara
 
 const insertWishlistAccessItem = `-- name: InsertWishlistAccessItem :execrows
 INSERT INTO wishlist_access_list (list_id, owner_id, user_id)
-VALUES ($1, $2, $3)
+VALUES ($1, $2, $3) ON CONFLICT DO NOTHING
 `
 
 type InsertWishlistAccessItemParams struct {

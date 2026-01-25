@@ -124,7 +124,7 @@ WHERE user_id = $1
 -- name: AddToFriends :execrows
 INSERT
 INTO friends (user_id, friend_id)
-VALUES ($1, $2), ($2, $1);
+VALUES ($1, $2), ($2, $1) ON CONFLICT DO NOTHING;
 
 -- name: DeleteFriendship :execrows
 DELETE
@@ -269,7 +269,7 @@ WHERE list_id = $1
 
 -- name: InsertWishlistAccessItem :execrows
 INSERT INTO wishlist_access_list (list_id, owner_id, user_id)
-VALUES ($1, $2, $3);
+VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;
 
 -- name: DeleteWishlistAccessItem :execrows
 DELETE
