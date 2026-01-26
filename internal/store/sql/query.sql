@@ -9,13 +9,13 @@ FROM users
 WHERE username = $1;
 
 -- name: CreateUser :one
-INSERT INTO users (id, username, photo_url, displayed_name)
-VALUES ($1, $2, $3, $4)
+INSERT INTO users (id, username, photo_url, displayed_name, language)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: UpdateUser :one
 UPDATE users
-SET updated_at       = now(),
+SET updated_at       = NOW(),
     displayed_name   = $2,
     photo_url        = $3,
     open_to_requests = $4
@@ -24,9 +24,10 @@ RETURNING *;
 
 -- name: UpdateUserSettings :execrows
 UPDATE users
-SET updated_at       = now(),
-    displayed_name = $2,
-    open_to_requests = $3
+SET updated_at       = NOW(),
+    displayed_name   = $2,
+    open_to_requests = $3,
+    language         = $4
 WHERE id = $1;
 
 
@@ -38,7 +39,8 @@ WHERE share_uuid = $1;
 -- name: GetUserWishlist :one
 SELECT *
 FROM wishlists
-WHERE id = $1 AND owner_id = $2;
+WHERE id = $1
+  AND owner_id = $2;
 
 -- name: GetUserWishlists :many
 SELECT *
@@ -52,23 +54,24 @@ RETURNING *;
 
 -- name: UpdateWishlist :one
 UPDATE wishlists
-SET updated_at  = now(),
+SET updated_at  = NOW(),
     title       = $1,
     description = $2,
     is_private  = $3
 WHERE id = $4
-  and owner_id = $5
+  AND owner_id = $5
 RETURNING *;
 
 -- name: DeleteWishlist :execrows
 DELETE
 FROM wishlists
-where id = $1
-  and owner_id = $2;
+WHERE id = $1
+  AND owner_id = $2;
 
 -- name: CreateFriendsRequest :execrows
 INSERT INTO friends_requests (user_id_from, user_id_to)
-VALUES ($1, $2) ON CONFLICT DO NOTHING;
+VALUES ($1, $2)
+ON CONFLICT DO NOTHING;
 
 -- name: GetIncomingFriendsRequests :many
 SELECT *
@@ -81,7 +84,7 @@ FROM users
 WHERE id IN (SELECT user_id_to FROM friends_requests WHERE user_id_from = $1);
 
 -- name: GetIncomingFriendsRequestsCount :one
-SELECT count(*)
+SELECT COUNT(*)
 FROM friends_requests
 WHERE user_id_to = $1;
 
@@ -116,7 +119,7 @@ WHERE user_id_to = $1
 
 
 -- name: CheckIfFriends :one
-SELECT count(*)
+SELECT COUNT(*)
 FROM friends
 WHERE user_id = $1
   AND friend_id = $2;
@@ -124,19 +127,22 @@ WHERE user_id = $1
 -- name: AddToFriends :execrows
 INSERT
 INTO friends (user_id, friend_id)
-VALUES ($1, $2), ($2, $1) ON CONFLICT DO NOTHING;
+VALUES ($1, $2),
+       ($2, $1)
+ON CONFLICT DO NOTHING;
 
 -- name: DeleteFriendship :execrows
 DELETE
 FROM friends
-WHERE user_id = $1 AND friend_id = $2 OR user_id = $2 AND friend_id = $1;
+WHERE user_id = $1 AND friend_id = $2
+   OR user_id = $2 AND friend_id = $1;
 
 
 -- name: GetWishlistItems :many
 SELECT *
 FROM wishlist_items
 WHERE wishlist_id = $1
-  and owner_id = $2;
+  AND owner_id = $2;
 
 -- name: GetFriendWishlistItems :many
 SELECT *
@@ -145,8 +151,8 @@ WHERE wishlist_id = $1
   AND EXISTS(SELECT *
              FROM wishlists
              WHERE wishlists.id = $1
-               AND EXISTS(SELECT * from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
-               AND (wishlists.is_private = false OR
+               AND EXISTS(SELECT * FROM friends WHERE friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
+               AND (wishlists.is_private = FALSE OR
                     EXISTS(SELECT *
                            FROM wishlist_access_list
                            WHERE wishlist_access_list.list_id = $1
@@ -160,7 +166,8 @@ WHERE id = $1;
 -- name: GetUserWishlistItem :one
 SELECT *
 FROM wishlist_items
-WHERE id = $1 AND owner_id = $2;
+WHERE id = $1
+  AND owner_id = $2;
 
 -- name: CreateWishlistItem :one
 INSERT INTO wishlist_items (wishlist_id, owner_id, title, description, price, links, reservable)
@@ -169,7 +176,7 @@ RETURNING *;
 
 -- name: UpdateWishlistItem :one
 UPDATE wishlist_items
-SET updated_at  = now(),
+SET updated_at  = NOW(),
     title       = $1,
     description = $2,
     price       = $3,
@@ -181,13 +188,13 @@ RETURNING *;
 
 -- name: ResetWishlistItemReservation :execrows
 UPDATE wishlist_items
-SET updated_at  = now(),
+SET updated_at  = NOW(),
     reserved_by = NULL
 WHERE id = $1;
 
 -- name: ResetWishlistItemsReservationsForFriend :execrows
 UPDATE wishlist_items
-SET updated_at  = now(),
+SET updated_at  = NOW(),
     reserved_by = $2
 WHERE owner_id = $1;
 
@@ -199,15 +206,15 @@ WHERE list_id = $1
 
 -- name: ReserveWishlistItem :execrows
 UPDATE wishlist_items
-SET updated_at  = now(),
+SET updated_at  = NOW(),
     reserved_by = $2
 WHERE wishlist_items.id = $1
   AND wishlist_items.reserved_by IS NULL
   AND EXISTS(SELECT *
              FROM wishlists
              WHERE wishlists.id = wishlist_items.wishlist_id
-               AND EXISTS(SELECT * from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
-               AND (wishlists.is_private = false OR
+               AND EXISTS(SELECT * FROM friends WHERE friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
+               AND (wishlists.is_private = FALSE OR
                     EXISTS(SELECT *
                            FROM wishlist_access_list
                            WHERE wishlist_access_list.list_id = wishlists.id
@@ -215,15 +222,15 @@ WHERE wishlist_items.id = $1
 
 -- name: CancelWishlistItemReservation :execrows
 UPDATE wishlist_items
-SET updated_at  = now(),
+SET updated_at  = NOW(),
     reserved_by = NULL
 WHERE wishlist_items.id = $1
   AND wishlist_items.reserved_by = $2
   AND EXISTS(SELECT *
              FROM wishlists
              WHERE wishlists.id = wishlist_items.wishlist_id
-               AND EXISTS(SELECT * from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
-               AND (wishlists.is_private = false OR
+               AND EXISTS(SELECT * FROM friends WHERE friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
+               AND (wishlists.is_private = FALSE OR
                     EXISTS(SELECT *
                            FROM wishlist_access_list
                            WHERE wishlist_access_list.list_id = wishlists.id
@@ -233,17 +240,18 @@ WHERE wishlist_items.id = $1
 DELETE
 FROM wishlist_items
 WHERE id = $1
-  and owner_id = $2;
+  AND owner_id = $2;
 
 -- name: GetFriendWishlists :many
 SELECT *
 FROM wishlists
 WHERE wishlists.owner_id = $1
-  AND (is_private = false OR
+  AND (is_private = FALSE OR
        id IN (SELECT list_id
               FROM wishlist_access_list
-              WHERE wishlist_access_list.owner_id = $1 AND wishlist_access_list.user_id = $2))
-  AND EXISTS(SELECT * from friends where friends.user_id = $1 AND friends.friend_id = $2);
+              WHERE wishlist_access_list.owner_id = $1
+                AND wishlist_access_list.user_id = $2))
+  AND EXISTS(SELECT * FROM friends WHERE friends.user_id = $1 AND friends.friend_id = $2);
 
 -- name: GetWishlistByWishId :one
 SELECT *
@@ -251,11 +259,11 @@ FROM wishlists
 WHERE wishlists.id = (SELECT wishlist_id FROM wishlist_items WHERE wishlist_items.id = $1);
 
 -- name: CheckIfUserHasAccessToWishlist :one
-SELECT count(*)
+SELECT COUNT(*)
 FROM wishlists
 WHERE wishlists.id = $1
-  AND EXISTS(SELECT * from friends where friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
-  AND (wishlists.is_private = false OR
+  AND EXISTS(SELECT * FROM friends WHERE friends.user_id = wishlists.owner_id AND friends.friend_id = $2)
+  AND (wishlists.is_private = FALSE OR
        EXISTS(SELECT *
               FROM wishlist_access_list
               WHERE wishlist_access_list.list_id = $1
@@ -269,15 +277,16 @@ WHERE list_id = $1
 
 -- name: InsertWishlistAccessItem :execrows
 INSERT INTO wishlist_access_list (list_id, owner_id, user_id)
-VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;
+VALUES ($1, $2, $3)
+ON CONFLICT DO NOTHING;
 
 -- name: DeleteWishlistAccessItem :execrows
 DELETE
-from wishlist_access_list
+FROM wishlist_access_list
 WHERE list_id = $1
   AND user_id = $2;
 
 -- name: DeleteWishlistAccessItems :exec
 DELETE
-from wishlist_access_list
+FROM wishlist_access_list
 WHERE list_id = $1;

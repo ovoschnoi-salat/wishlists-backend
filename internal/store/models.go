@@ -28,6 +28,7 @@ type User struct {
 	DisplayedName  string           `json:"displayed_name"`
 	PhotoUrl       string           `json:"photo_url"`
 	OpenToRequests bool             `json:"open_to_requests"`
+	Language       string           `json:"language"`
 }
 
 type Wishlist struct {

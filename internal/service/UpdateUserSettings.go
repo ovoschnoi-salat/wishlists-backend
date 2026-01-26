@@ -41,6 +41,7 @@ func (s *Service) UpdateUserSettings(c *gin.Context) {
 		ID:             authData.User.ID,
 		DisplayedName:  req.DisplayedName,
 		OpenToRequests: req.OpenToRequests,
+		Language:       req.Language,
 	})
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to update user: %w", err))

@@ -1507,6 +1507,9 @@ const docTemplate = `{
                 "displayed_name": {
                     "type": "string"
                 },
+                "language": {
+                    "type": "string"
+                },
                 "open_to_requests": {
                     "type": "boolean"
                 }

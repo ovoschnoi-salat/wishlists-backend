@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -18,6 +19,15 @@ import (
 
 const userDataCtxKey = "user_data"
 const initDataCtxKey = "init_data"
+
+func containsRussian(text string) bool {
+	for _, r := range text {
+		if unicode.Is(unicode.Cyrillic, r) {
+			return true
+		}
+	}
+	return false
+}
 
 func NewTgAuthMiddleware(secretToken string, db *store.Queries, stage config.Stage) gin.HandlerFunc {
 	// Define how long since init data generation date init data is valid.
@@ -64,6 +74,11 @@ func NewTgAuthMiddleware(secretToken string, db *store.Queries, stage config.Sta
 					name = data.User.FirstName
 				}
 				req.DisplayedName = name
+				if containsRussian(name) {
+					req.Language = "ru"
+				} else {
+					req.Language = "en"
+				}
 			}
 			user, err = db.CreateUser(c, req)
 			if err != nil {
