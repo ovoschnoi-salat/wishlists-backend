@@ -990,8 +990,8 @@ func (q *Queries) ResetWishlistItemReservation(ctx context.Context, id int64) (i
 const resetWishlistItemsReservationsForFriend = `-- name: ResetWishlistItemsReservationsForFriend :execrows
 UPDATE wishlist_items
 SET updated_at  = NOW(),
-    reserved_by = $2
-WHERE owner_id = $1
+    reserved_by = NULL
+WHERE owner_id = $1 AND reserved_by = $2 OR reserved_by = $1 AND owner_id = $2
 `
 
 type ResetWishlistItemsReservationsForFriendParams struct {

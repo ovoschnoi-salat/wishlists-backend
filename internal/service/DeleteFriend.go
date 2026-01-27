@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // DeleteFriend godoc
@@ -49,6 +50,15 @@ func (s *Service) DeleteFriend(c *gin.Context) {
 	}
 	if count == 0 {
 		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("friend not found"))
+		return
+	}
+
+	_, err = s.db.ResetWishlistItemsReservationsForFriend(c, store.ResetWishlistItemsReservationsForFriendParams{
+		OwnerID:    friendID,
+		ReservedBy: pgtype.Int8{Int64: authData.User.ID, Valid: true},
+	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting friend: %w", err))
 		return
 	}
 
