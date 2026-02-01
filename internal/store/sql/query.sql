@@ -45,7 +45,8 @@ WHERE id = $1
 -- name: GetUserWishlists :many
 SELECT *
 FROM wishlists
-WHERE owner_id = $1;
+WHERE owner_id = $1
+ORDER BY id;
 
 -- name: CreateWishlist :one
 INSERT INTO wishlists (owner_id, title, description, is_private)
@@ -142,7 +143,8 @@ WHERE user_id = $1 AND friend_id = $2
 SELECT *
 FROM wishlist_items
 WHERE wishlist_id = $1
-  AND owner_id = $2;
+  AND owner_id = $2
+ORDER BY wishlist_items.id;
 
 -- name: GetFriendWishlistItems :many
 SELECT *
@@ -156,7 +158,8 @@ WHERE wishlist_id = $1
                     EXISTS(SELECT *
                            FROM wishlist_access_list
                            WHERE wishlist_access_list.list_id = $1
-                             AND wishlist_access_list.user_id = $2)));
+                             AND wishlist_access_list.user_id = $2)))
+ORDER BY wishlist_items.id;
 
 -- name: GetWishlistItem :one
 SELECT *
@@ -167,7 +170,8 @@ WHERE id = $1;
 SELECT *
 FROM wishlist_items
 WHERE id = $1
-  AND owner_id = $2;
+  AND owner_id = $2
+ORDER BY wishlist_items.id;
 
 -- name: CreateWishlistItem :one
 INSERT INTO wishlist_items (wishlist_id, owner_id, title, description, price, links, reservable)
@@ -196,7 +200,8 @@ WHERE id = $1;
 UPDATE wishlist_items
 SET updated_at  = NOW(),
     reserved_by = NULL
-WHERE owner_id = $1 AND reserved_by = $2 OR reserved_by = $1 AND owner_id = $2;
+WHERE owner_id = $1 AND reserved_by = $2
+   OR reserved_by = $1 AND owner_id = $2;
 
 -- name: CheckUserHasAccessToPrivateWishlist :one
 SELECT *
@@ -251,7 +256,8 @@ WHERE wishlists.owner_id = $1
               FROM wishlist_access_list
               WHERE wishlist_access_list.owner_id = $1
                 AND wishlist_access_list.user_id = $2))
-  AND EXISTS(SELECT * FROM friends WHERE friends.user_id = $1 AND friends.friend_id = $2);
+  AND EXISTS(SELECT * FROM friends WHERE friends.user_id = $1 AND friends.friend_id = $2)
+ORDER BY wishlists.id;
 
 -- name: GetWishlistByWishId :one
 SELECT *
@@ -285,6 +291,12 @@ DELETE
 FROM wishlist_access_list
 WHERE list_id = $1
   AND user_id = $2;
+
+-- name: DeleteUserFromAccessLists :execrows
+DELETE
+FROM wishlist_access_list
+WHERE owner_id = $1
+  AND user_id = $2 OR owner_id = $2 AND user_id = $1;
 
 -- name: DeleteWishlistAccessItems :exec
 DELETE

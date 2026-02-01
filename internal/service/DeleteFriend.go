@@ -58,7 +58,16 @@ func (s *Service) DeleteFriend(c *gin.Context) {
 		ReservedBy: pgtype.Int8{Int64: authData.User.ID, Valid: true},
 	})
 	if err != nil {
-		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting friend: %w", err))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error removing friend reservations: %w", err))
+		return
+	}
+
+	_, err = s.db.DeleteUserFromAccessLists(c, store.DeleteUserFromAccessListsParams{
+		OwnerID: friendID,
+		UserID:  authData.User.ID,
+	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting friend from access lists: %w", err))
 		return
 	}
 

@@ -327,6 +327,26 @@ func (q *Queries) DeleteFriendship(ctx context.Context, arg DeleteFriendshipPara
 	return result.RowsAffected(), nil
 }
 
+const deleteUserFromAccessLists = `-- name: DeleteUserFromAccessLists :execrows
+DELETE
+FROM wishlist_access_list
+WHERE owner_id = $1
+  AND user_id = $2 OR owner_id = $2 AND user_id = $1
+`
+
+type DeleteUserFromAccessListsParams struct {
+	OwnerID int64 `json:"owner_id"`
+	UserID  int64 `json:"user_id"`
+}
+
+func (q *Queries) DeleteUserFromAccessLists(ctx context.Context, arg DeleteUserFromAccessListsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteUserFromAccessLists, arg.OwnerID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteWishlist = `-- name: DeleteWishlist :execrows
 DELETE
 FROM wishlists
@@ -431,6 +451,7 @@ WHERE wishlist_id = $1
                            FROM wishlist_access_list
                            WHERE wishlist_access_list.list_id = $1
                              AND wishlist_access_list.user_id = $2)))
+ORDER BY wishlist_items.id
 `
 
 type GetFriendWishlistItemsParams struct {
@@ -480,6 +501,7 @@ WHERE wishlists.owner_id = $1
               WHERE wishlist_access_list.owner_id = $1
                 AND wishlist_access_list.user_id = $2))
   AND EXISTS(SELECT user_id, friend_id, created_at FROM friends WHERE friends.user_id = $1 AND friends.friend_id = $2)
+ORDER BY wishlists.id
 `
 
 type GetFriendWishlistsParams struct {
@@ -733,6 +755,7 @@ SELECT id, created_at, updated_at, owner_id, wishlist_id, title, description, pr
 FROM wishlist_items
 WHERE id = $1
   AND owner_id = $2
+ORDER BY wishlist_items.id
 `
 
 type GetUserWishlistItemParams struct {
@@ -763,6 +786,7 @@ const getUserWishlists = `-- name: GetUserWishlists :many
 SELECT id, created_at, updated_at, owner_id, title, description, is_private, share_uuid
 FROM wishlists
 WHERE owner_id = $1
+ORDER BY id
 `
 
 func (q *Queries) GetUserWishlists(ctx context.Context, ownerID int64) ([]Wishlist, error) {
@@ -883,6 +907,7 @@ SELECT id, created_at, updated_at, owner_id, wishlist_id, title, description, pr
 FROM wishlist_items
 WHERE wishlist_id = $1
   AND owner_id = $2
+ORDER BY wishlist_items.id
 `
 
 type GetWishlistItemsParams struct {
@@ -991,7 +1016,8 @@ const resetWishlistItemsReservationsForFriend = `-- name: ResetWishlistItemsRese
 UPDATE wishlist_items
 SET updated_at  = NOW(),
     reserved_by = NULL
-WHERE owner_id = $1 AND reserved_by = $2 OR reserved_by = $1 AND owner_id = $2
+WHERE owner_id = $1 AND reserved_by = $2
+   OR reserved_by = $1 AND owner_id = $2
 `
 
 type ResetWishlistItemsReservationsForFriendParams struct {
