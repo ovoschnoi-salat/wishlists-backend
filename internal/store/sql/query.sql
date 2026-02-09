@@ -16,9 +16,8 @@ RETURNING *;
 -- name: UpdateUser :one
 UPDATE users
 SET updated_at       = NOW(),
-    displayed_name   = $2,
-    photo_url        = $3,
-    open_to_requests = $4
+    username         = $2,
+    photo_url        = $3
 WHERE id = $1
 RETURNING *;
 

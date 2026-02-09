@@ -1036,27 +1036,20 @@ func (q *Queries) ResetWishlistItemsReservationsForFriend(ctx context.Context, a
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET updated_at       = NOW(),
-    displayed_name   = $2,
-    photo_url        = $3,
-    open_to_requests = $4
+    username         = $2,
+    photo_url        = $3
 WHERE id = $1
 RETURNING id, created_at, updated_at, username, displayed_name, photo_url, open_to_requests, language
 `
 
 type UpdateUserParams struct {
-	ID             int64  `json:"id"`
-	DisplayedName  string `json:"displayed_name"`
-	PhotoUrl       string `json:"photo_url"`
-	OpenToRequests bool   `json:"open_to_requests"`
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	PhotoUrl string `json:"photo_url"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUser,
-		arg.ID,
-		arg.DisplayedName,
-		arg.PhotoUrl,
-		arg.OpenToRequests,
-	)
+	row := q.db.QueryRow(ctx, updateUser, arg.ID, arg.Username, arg.PhotoUrl)
 	var i User
 	err := row.Scan(
 		&i.ID,

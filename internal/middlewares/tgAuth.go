@@ -85,7 +85,18 @@ func NewTgAuthMiddleware(secretToken string, db *store.Queries, stage config.Sta
 				subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating user: %w", err))
 				return
 			}
+		} else if user.Username != data.User.Username || user.PhotoUrl != data.User.PhotoURL {
+			user, err = db.UpdateUser(c, store.UpdateUserParams{
+				ID:       user.ID,
+				Username: data.User.Username,
+				PhotoUrl: data.User.PhotoURL,
+			})
+			if err != nil {
+				subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error updating user: %w", err))
+				return
+			}
 		}
+
 		c.Set(userDataCtxKey, user)
 		c.Set(initDataCtxKey, data)
 	}

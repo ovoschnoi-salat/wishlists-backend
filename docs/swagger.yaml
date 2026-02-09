@@ -104,24 +104,6 @@ definitions:
       count:
         type: integer
     type: object
-  service.UpdateUser:
-    properties:
-      displayed_name:
-        type: string
-      open_to_requests:
-        type: boolean
-      photo_url:
-        type: string
-    type: object
-  service.User:
-    properties:
-      displayed_name:
-        type: string
-      open_to_requests:
-        type: boolean
-      photo_url:
-        type: string
-    type: object
   service.UserSettings:
     properties:
       displayed_name:
@@ -216,41 +198,6 @@ paths:
       summary: returns shared wishlist
       tags:
       - Friends
-  /api/user:
-    patch:
-      consumes:
-      - application/json
-      parameters:
-      - description: request body
-        in: body
-        name: wishlist
-        required: true
-        schema:
-          $ref: '#/definitions/service.UpdateUser'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/service.User'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/subcodeErrors.Response'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/subcodeErrors.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/subcodeErrors.Response'
-      security:
-      - ApiKeyAuth: []
-      summary: updates user
-      tags:
-      - User
   /api/user/friend:
     delete:
       consumes:

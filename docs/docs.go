@@ -66,62 +66,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/user": {
-            "patch": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "updates user",
-                "parameters": [
-                    {
-                        "description": "request body",
-                        "name": "wishlist",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/service.UpdateUser"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/service.User"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/subcodeErrors.Response"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/subcodeErrors.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/subcodeErrors.Response"
-                        }
-                    }
-                }
-            }
-        },
         "/api/user/friend": {
             "delete": {
                 "security": [
@@ -1470,34 +1414,6 @@ const docTemplate = `{
             "properties": {
                 "count": {
                     "type": "integer"
-                }
-            }
-        },
-        "service.UpdateUser": {
-            "type": "object",
-            "properties": {
-                "displayed_name": {
-                    "type": "string"
-                },
-                "open_to_requests": {
-                    "type": "boolean"
-                },
-                "photo_url": {
-                    "type": "string"
-                }
-            }
-        },
-        "service.User": {
-            "type": "object",
-            "properties": {
-                "displayed_name": {
-                    "type": "string"
-                },
-                "open_to_requests": {
-                    "type": "boolean"
-                },
-                "photo_url": {
-                    "type": "string"
                 }
             }
         },
