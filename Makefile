@@ -1,7 +1,7 @@
 # Команды для управления сервисами
 
 .PHONY: restart-prod
-deploy-prod:
+restart-prod:
 ifdef service
 	docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d $(service)
 else
