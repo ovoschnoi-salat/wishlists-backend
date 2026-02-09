@@ -5,3 +5,5 @@
 - add proper checks for permissions
 - clear reservations on delete from access list
 - create proper error codes
+- update username if changed
+- add search by id

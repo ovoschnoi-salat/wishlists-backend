@@ -1,4 +1,8 @@
 services:
+  db:
+    ports:
+      - "55432:5432"
+
   grafana:
     ports:
       - "33005:3000"
