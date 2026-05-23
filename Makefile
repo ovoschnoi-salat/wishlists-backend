@@ -85,3 +85,13 @@ migrate-up: install-utils
 .PHONY: migrate-down
 migrate-down: install-utils
 	(cd migrations; goose postgres "${PG_DSN}" down)
+
+
+ifneq (,$(wildcard ./.env))
+	include .env
+	export
+endif
+
+.PHONY: db-dump
+db-dump:
+	docker exec -t wishlists-db pg_dump -U ${POSTGRES_USER} wishlists > backup/dump.sql
