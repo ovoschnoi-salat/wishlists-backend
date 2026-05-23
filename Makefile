@@ -63,7 +63,8 @@ generate-swagger: install-utils
 	swag init  --generalInfo cmd/main.go
 
 
-PG_DSN:=postgres://postgres:postgres@localhost:5432/wishlists?sslmode=disable&timezone=UTC
+include .env
+PG_DSN:=postgres://$(POSTGRES_USER):$(POSTGRES_PASS)@localhost:5432/wishlists?sslmode=disable&timezone=UTC
 
 .PHONY: generate-sql
 generate-sql: install-utils
@@ -87,12 +88,7 @@ migrate-down: install-utils
 	(cd migrations; goose postgres "${PG_DSN}" down)
 
 
-ifneq (,$(wildcard ./.env))
-	include .env
-	export
-endif
-
 .PHONY: db-dump
 db-dump:
-	mkdir backup
-	docker exec -t wishlists-db pg_dump -U ${POSTGRES_USER} wishlists > backup/dump.sql
+	mkdir -p backup
+	docker exec -t wishlists-db pg_dump -U $(POSTGRES_USER) wishlists > backup/dump.sql
