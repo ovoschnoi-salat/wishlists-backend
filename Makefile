@@ -94,4 +94,5 @@ endif
 
 .PHONY: db-dump
 db-dump:
+	mkdir backup
 	docker exec -t wishlists-db pg_dump -U ${POSTGRES_USER} wishlists > backup/dump.sql
