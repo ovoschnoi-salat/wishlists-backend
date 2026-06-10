@@ -34,11 +34,11 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 		return
 	}
 
-	// Get item ID from URL parameter
-	itemIDRaw := c.Query("item_id")
-	itemID, err := strconv.ParseInt(itemIDRaw, 10, 64)
+	// Get wish ID from URL parameter
+	wishIDRaw := c.Query("item_id")
+	wishID, err := strconv.ParseInt(wishIDRaw, 10, 64)
 	if err != nil {
-		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid item_id: %s", itemIDRaw))
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid wish_id: %s", wishIDRaw))
 		return
 	}
 
@@ -57,9 +57,22 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 		return
 	}
 
-	// Update the wishlist item
+	count, err := s.db.CheckUserOwnsWish(c, store.CheckUserOwnsWishParams{
+		ID:      wishID,
+		OwnerID: authData.User.ID,
+	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wish: %w", err))
+		return
+	}
+	if count == 0 {
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("no access to wish"))
+		return
+	}
+
+	// Update the wish
 	wishlistItem, err := s.db.UpdateWishlistItem(c, store.UpdateWishlistItemParams{
-		ID:          itemID,
+		ID:          wishID,
 		OwnerID:     authData.User.ID,
 		Title:       req.Title,
 		Description: req.Description,
@@ -69,7 +82,7 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, fmt.Errorf("wish %s cannot be updated: %w", itemIDRaw, err))
+			subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, fmt.Errorf("wish %s cannot be updated: %w", wishIDRaw, err))
 			return
 		}
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error updating wishlist item: %w", err))
@@ -88,5 +101,5 @@ func (s *Service) UpdateUserWishlistItem(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, mapStoreWishlistItemToWishlistItem(wishlistItem))
+	c.JSON(http.StatusOK, mapStoreWishToWishlistItem(wishlistItem))
 }

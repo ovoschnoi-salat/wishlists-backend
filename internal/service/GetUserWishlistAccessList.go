@@ -5,6 +5,7 @@ import (
 	"backend/internal/store"
 	"backend/internal/subcodeErrors"
 	"backend/internal/subcodeErrors/codes"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -34,6 +35,19 @@ func (s *Service) GetUserWishlistAccessList(c *gin.Context) {
 	wishlistID, err := strconv.ParseInt(wishlistIDStr, 10, 64)
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid wishlist_id: %w", err))
+		return
+	}
+
+	count, err := s.db.CheckUserOwnsWishlist(c, store.CheckUserOwnsWishlistParams{
+		ID:      wishlistID,
+		OwnerID: authData.User.ID,
+	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wish: %w", err))
+		return
+	}
+	if count == 0 {
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("no access to wishlist"))
 		return
 	}
 

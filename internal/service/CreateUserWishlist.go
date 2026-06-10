@@ -5,6 +5,7 @@ import (
 	"backend/internal/store"
 	"backend/internal/subcodeErrors"
 	"backend/internal/subcodeErrors/codes"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -12,10 +13,11 @@ import (
 )
 
 type CreateWishlistRequest struct {
-	Title           string  `json:"title"`
-	Description     string  `json:"description"`
-	IsPrivate       bool    `json:"is_private"`
-	UsersWithAccess []int64 `json:"users_with_access"`
+	Title               string              `json:"title"`
+	Description         string              `json:"description"`
+	IsPrivate           bool                `json:"is_private"`
+	UsersWithAccess     []int64             `json:"users_with_access"`
+	SplitRequestPrivacy SplitRequestPrivacy `json:"split_request_privacy"`
 }
 
 // CreateWishlist godoc
@@ -44,11 +46,18 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 		return
 	}
 
+	splitRequestPrivacy, err := mapSplitRequestPrivacyToStoreSplitRequestPrivacy(req.SplitRequestPrivacy)
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
+		return
+	}
+
 	wishlist, err := s.db.CreateWishlist(c, store.CreateWishlistParams{
-		OwnerID:     authData.User.ID,
-		Title:       req.Title,
-		Description: req.Description,
-		IsPrivate:   req.IsPrivate,
+		OwnerID:             authData.User.ID,
+		Title:               req.Title,
+		Description:         req.Description,
+		IsPrivate:           req.IsPrivate,
+		SplitRequestPrivacy: splitRequestPrivacy,
 	})
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating wishlist: %w", err))
@@ -67,4 +76,15 @@ func (s *Service) CreateWishlist(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, mapStoreWishlistToWishlist(wishlist))
+}
+
+func mapSplitRequestPrivacyToStoreSplitRequestPrivacy(splitRequestPrivacy SplitRequestPrivacy) (store.SplitRequestPrivacy, error) {
+	switch splitRequestPrivacy {
+	case SplitRequestPrivacyInvisibleToOwner:
+		return store.SplitRequestPrivacyInvisibleToOwner, nil
+	case SplitRequestPrivacyVisibleToOwner:
+		return store.SplitRequestPrivacyVisibleToOwner, nil
+	default:
+		return "", errors.New("invalid split request privacy: " + string(splitRequestPrivacy))
+	}
 }

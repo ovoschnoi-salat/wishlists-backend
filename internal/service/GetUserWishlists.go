@@ -12,12 +12,21 @@ import (
 )
 
 type Wishlist struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	IsPrivate   bool   `json:"is_private"`
-	ShareUUID   string `json:"share_uuid"`
+	ID                  int64               `json:"id"`
+	Title               string              `json:"title"`
+	Description         string              `json:"description"`
+	IsPrivate           bool                `json:"is_private"`
+	ShareUUID           string              `json:"share_uuid"`
+	SplitRequestPrivacy SplitRequestPrivacy `json:"split_request_privacy"`
 }
+
+type SplitRequestPrivacy string
+
+const (
+	SplitRequestPrivacyUnknown          SplitRequestPrivacy = "unknown"
+	SplitRequestPrivacyInvisibleToOwner SplitRequestPrivacy = "invisible_to_owner"
+	SplitRequestPrivacyVisibleToOwner   SplitRequestPrivacy = "visible_to_owner"
+)
 
 // GetUserWishlists godoc
 // @Summary returns user's wishlists
@@ -43,13 +52,25 @@ func (s *Service) GetUserWishlists(c *gin.Context) {
 	c.JSON(http.StatusOK, mapStoreWishlistsToWishlists(wishlists))
 }
 
+func mapStoreSplitRequestPrivacyToSplitRequestPrivacy(splitRequestPrivacy store.SplitRequestPrivacy) SplitRequestPrivacy {
+	switch splitRequestPrivacy {
+	case store.SplitRequestPrivacyInvisibleToOwner:
+		return SplitRequestPrivacyInvisibleToOwner
+	case store.SplitRequestPrivacyVisibleToOwner:
+		return SplitRequestPrivacyVisibleToOwner
+	default:
+		return SplitRequestPrivacyUnknown
+	}
+}
+
 func mapStoreWishlistToWishlist(wishlist store.Wishlist) Wishlist {
 	return Wishlist{
-		ID:          wishlist.ID,
-		Title:       wishlist.Title,
-		Description: wishlist.Description,
-		IsPrivate:   wishlist.IsPrivate,
-		ShareUUID:   wishlist.ShareUuid.String(),
+		ID:                  wishlist.ID,
+		Title:               wishlist.Title,
+		Description:         wishlist.Description,
+		IsPrivate:           wishlist.IsPrivate,
+		ShareUUID:           wishlist.ShareUuid.String(),
+		SplitRequestPrivacy: mapStoreSplitRequestPrivacyToSplitRequestPrivacy(wishlist.SplitRequestPrivacy),
 	}
 }
 

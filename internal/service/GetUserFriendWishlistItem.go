@@ -5,6 +5,7 @@ import (
 	"backend/internal/store"
 	"backend/internal/subcodeErrors"
 	"backend/internal/subcodeErrors/codes"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -37,22 +38,22 @@ func (s *Service) GetUserFriendWishlistItem(c *gin.Context) {
 		return
 	}
 
-	item, err := s.db.GetWishlistItem(c, wishID)
-	if err != nil {
-		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error getting friend wishlist item: %w", err))
-		return
-	}
-
-	count, err := s.db.CheckIfUserHasAccessToWishlist(c, store.CheckIfUserHasAccessToWishlistParams{
-		ID:       item.WishlistID,
+	count, err := s.db.CheckUserHasAccessToWish(c, store.CheckUserHasAccessToWishParams{
+		ID:       wishID,
 		FriendID: authData.User.ID,
 	})
 	if err != nil {
-		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking if user has access to friend wishlist item: %w", err))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wish: %w", err))
 		return
 	}
 	if count == 0 {
-		subcodeErrors.SendResponse(c, http.StatusNotFound, codes.WishNotFoundErrCode, fmt.Errorf("item not found"))
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("no access to wish"))
+		return
+	}
+
+	item, err := s.db.GetWish(c, wishID)
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error getting friend wishlist item: %w", err))
 		return
 	}
 

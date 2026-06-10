@@ -49,6 +49,8 @@ definitions:
         type: string
       is_private:
         type: boolean
+      split_request_privacy:
+        $ref: '#/definitions/service.SplitRequestPrivacy'
       title:
         type: string
       users_with_access:
@@ -99,11 +101,30 @@ definitions:
       wishlist_id:
         type: integer
     type: object
+  service.GetSplitRequestsResponse:
+    properties:
+      request_from_user_exists:
+        type: boolean
+      split_requests:
+        items:
+          $ref: '#/definitions/service.Friend'
+        type: array
+    type: object
   service.IncomingFriendsRequestsCountResponse:
     properties:
       count:
         type: integer
     type: object
+  service.SplitRequestPrivacy:
+    enum:
+    - unknown
+    - invisible_to_owner
+    - visible_to_owner
+    type: string
+    x-enum-varnames:
+    - SplitRequestPrivacyUnknown
+    - SplitRequestPrivacyInvisibleToOwner
+    - SplitRequestPrivacyVisibleToOwner
   service.UserSettings:
     properties:
       displayed_name:
@@ -123,6 +144,8 @@ definitions:
         type: boolean
       share_uuid:
         type: string
+      split_request_privacy:
+        $ref: '#/definitions/service.SplitRequestPrivacy'
       title:
         type: string
     type: object
@@ -436,6 +459,65 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: reserves friend's wish
+      tags:
+      - Friend's Wish
+  /api/user/friend/wishlist/wish/split-request:
+    delete:
+      parameters:
+      - description: Wish ID
+        in: query
+        name: wish_id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: creates wish split request
+      tags:
+      - Friend's Wish
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: wish id
+        in: query
+        name: wish_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: creates a wishlist item split requests
       tags:
       - Friend's Wish
   /api/user/friend/wishlists:
@@ -810,6 +892,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/subcodeErrors.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
         "500":
           description: Internal Server Error
           schema:
@@ -890,6 +976,42 @@ paths:
       summary: creates a wishlist item
       tags:
       - User
+  /api/user/wishlist/item/split-requests:
+    get:
+      parameters:
+      - description: Wishlist item ID
+        in: query
+        name: item_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.GetSplitRequestsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/subcodeErrors.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: returns wish split requests
+      tags:
+      - Wish
   /api/user/wishlist/items:
     get:
       parameters:

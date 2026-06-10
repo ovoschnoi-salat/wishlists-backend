@@ -5,6 +5,7 @@ import (
 	"backend/internal/store"
 	"backend/internal/subcodeErrors"
 	"backend/internal/subcodeErrors/codes"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -40,6 +41,19 @@ func (s *Service) GetUserFriendWishlists(c *gin.Context) {
 	friendID, err := strconv.ParseInt(friendIDStr, 10, 64)
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, fmt.Errorf("invalid friend_id: %w", err))
+		return
+	}
+
+	count, err := s.db.CheckIfFriends(c, store.CheckIfFriendsParams{
+		UserID:   authData.User.ID,
+		FriendID: friendID,
+	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to check friendship: %w", err))
+		return
+	}
+	if count == 0 {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InvalidRequestParametersErrCode, errors.New("no friendship found"))
 		return
 	}
 

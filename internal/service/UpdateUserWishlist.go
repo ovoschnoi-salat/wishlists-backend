@@ -47,12 +47,19 @@ func (s *Service) UpdateUserWishlist(c *gin.Context) {
 		return
 	}
 
+	splitRequestPrivacy, err := mapSplitRequestPrivacyToStoreSplitRequestPrivacy(req.SplitRequestPrivacy)
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestParametersErrCode, err)
+		return
+	}
+
 	wishlist, err := s.db.UpdateWishlist(c, store.UpdateWishlistParams{
-		ID:          wishlistID,
-		OwnerID:     authData.User.ID,
-		Title:       req.Title,
-		Description: req.Description,
-		IsPrivate:   req.IsPrivate,
+		ID:                  wishlistID,
+		OwnerID:             authData.User.ID,
+		Title:               req.Title,
+		Description:         req.Description,
+		IsPrivate:           req.IsPrivate,
+		SplitRequestPrivacy: splitRequestPrivacy,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

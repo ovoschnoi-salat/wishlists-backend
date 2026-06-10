@@ -5,8 +5,53 @@
 package store
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type SplitRequestPrivacy string
+
+const (
+	SplitRequestPrivacyInvisibleToOwner SplitRequestPrivacy = "invisible_to_owner"
+	SplitRequestPrivacyVisibleToOwner   SplitRequestPrivacy = "visible_to_owner"
+)
+
+func (e *SplitRequestPrivacy) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SplitRequestPrivacy(s)
+	case string:
+		*e = SplitRequestPrivacy(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SplitRequestPrivacy: %T", src)
+	}
+	return nil
+}
+
+type NullSplitRequestPrivacy struct {
+	SplitRequestPrivacy SplitRequestPrivacy `json:"split_request_privacy"`
+	Valid               bool                `json:"valid"` // Valid is true if SplitRequestPrivacy is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSplitRequestPrivacy) Scan(value interface{}) error {
+	if value == nil {
+		ns.SplitRequestPrivacy, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SplitRequestPrivacy.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSplitRequestPrivacy) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SplitRequestPrivacy), nil
+}
 
 type Friend struct {
 	UserID    int64            `json:"user_id"`
@@ -32,14 +77,15 @@ type User struct {
 }
 
 type Wishlist struct {
-	ID          int64            `json:"id"`
-	CreatedAt   pgtype.Timestamp `json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
-	OwnerID     int64            `json:"owner_id"`
-	Title       string           `json:"title"`
-	Description string           `json:"description"`
-	IsPrivate   bool             `json:"is_private"`
-	ShareUuid   pgtype.UUID      `json:"share_uuid"`
+	ID                  int64               `json:"id"`
+	CreatedAt           pgtype.Timestamp    `json:"created_at"`
+	UpdatedAt           pgtype.Timestamp    `json:"updated_at"`
+	OwnerID             int64               `json:"owner_id"`
+	Title               string              `json:"title"`
+	Description         string              `json:"description"`
+	IsPrivate           bool                `json:"is_private"`
+	ShareUuid           pgtype.UUID         `json:"share_uuid"`
+	SplitRequestPrivacy SplitRequestPrivacy `json:"split_request_privacy"`
 }
 
 type WishlistAccessList struct {
@@ -61,4 +107,12 @@ type WishlistItem struct {
 	Links       []byte           `json:"links"`
 	Reservable  bool             `json:"reservable"`
 	ReservedBy  pgtype.Int8      `json:"reserved_by"`
+}
+
+type WishlistItemsSplitRequest struct {
+	ListID    int64            `json:"list_id"`
+	OwnerID   int64            `json:"owner_id"`
+	WishID    int64            `json:"wish_id"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UserID    int64            `json:"user_id"`
 }

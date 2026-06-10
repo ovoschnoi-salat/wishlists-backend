@@ -5,6 +5,7 @@ import (
 	"backend/internal/store"
 	"backend/internal/subcodeErrors"
 	"backend/internal/subcodeErrors/codes"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -37,10 +38,20 @@ func (s *Service) GetUserWishlistItems(c *gin.Context) {
 		return
 	}
 
-	items, err := s.db.GetWishlistItems(c, store.GetWishlistItemsParams{
-		WishlistID: wishlistID,
-		OwnerID:    authData.User.ID,
+	count, err := s.db.CheckUserOwnsWishlist(c, store.CheckUserOwnsWishlistParams{
+		ID:      wishlistID,
+		OwnerID: authData.User.ID,
 	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wish: %w", err))
+		return
+	}
+	if count == 0 {
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("no access to wishlist"))
+		return
+	}
+
+	items, err := s.db.GetWishlistItems(c, wishlistID)
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error getting wishlist items: %w", err))
 		return
@@ -52,7 +63,7 @@ func (s *Service) GetUserWishlistItems(c *gin.Context) {
 func mapStoreWishlistItemsToWishlistItems(items []store.WishlistItem) []WishlistItem {
 	res := make([]WishlistItem, len(items))
 	for i, item := range items {
-		res[i] = mapStoreWishlistItemToWishlistItem(item)
+		res[i] = mapStoreWishToWishlistItem(item)
 	}
 	return res
 }

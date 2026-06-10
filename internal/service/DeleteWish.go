@@ -39,16 +39,26 @@ func (s *Service) DeleteUserWish(c *gin.Context) {
 		return
 	}
 
-	count, err := s.db.DeleteWishlistItem(c, store.DeleteWishlistItemParams{
+	count, err := s.db.CheckUserOwnsWish(c, store.CheckUserOwnsWishParams{
 		ID:      wishID,
 		OwnerID: authData.User.ID,
 	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wish: %w", err))
+		return
+	}
+	if count == 0 {
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("no access to wish"))
+		return
+	}
+
+	count, err = s.db.DeleteWish(c, wishID)
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting wish: %w", err))
 		return
 	}
 	if count == 0 {
-		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("wish not found"))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, errors.New("error deleting wish: no rows affected"))
 		return
 	}
 

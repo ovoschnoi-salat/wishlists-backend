@@ -14,19 +14,19 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// GetUserWishlistItem godoc
-// @Summary returns wishlist item
-// @Tags User
-// @Router /api/user/wishlist/item [get]
+// CreateWishSplitRequest godoc
+// @Summary creates a wishlist item split requests
+// @Tags Friend's Wish
+// @Router /api/user/friend/wishlist/wish/split-request [post]
 // @Security ApiKeyAuth
-// @Param item_id query int true "Wishlist item ID"
+// @Accept json
 // @Produce json
+// @Param wish_id query int true "wish id"
 // @Failure 400 {object} subcodeErrors.Response
 // @Failure 401 {object} subcodeErrors.Response
-// @Failure 404 {object} subcodeErrors.Response
 // @Failure 500 {object} subcodeErrors.Response
-// @Success 200 {object} WishlistItem
-func (s *Service) GetUserWishlistItem(c *gin.Context) {
+// @Success 204
+func (s *Service) CreateWishSplitRequest(c *gin.Context) {
 	authData, authorized := middlewares.GetInitDataFromContext(c)
 	if !authorized {
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, noInitDataErr)
@@ -34,16 +34,16 @@ func (s *Service) GetUserWishlistItem(c *gin.Context) {
 	}
 
 	// Get wishlist ID from URL parameter
-	wishIDStr := c.Query("item_id")
+	wishIDStr := c.Query("wish_id")
 	wishID, err := strconv.ParseInt(wishIDStr, 10, 64)
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.UnauthorizedErrCode, fmt.Errorf("invalid wish_id: %w", err))
 		return
 	}
 
-	count, err := s.db.CheckUserOwnsWish(c, store.CheckUserOwnsWishParams{
-		ID:      wishID,
-		OwnerID: authData.User.ID,
+	count, err := s.db.CheckUserHasAccessToWish(c, store.CheckUserHasAccessToWishParams{
+		ID:       wishID,
+		FriendID: authData.User.ID,
 	})
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wish: %w", err))
@@ -54,16 +54,31 @@ func (s *Service) GetUserWishlistItem(c *gin.Context) {
 		return
 	}
 
-	// Get wish
+	// Get wishlist item
 	wish, err := s.db.GetWish(c, wishID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			subcodeErrors.SendResponse(c, http.StatusNotFound, codes.WishNotFoundErrCode, fmt.Errorf("no wish found"))
+			subcodeErrors.SendResponse(c, http.StatusNotFound, codes.WishNotFoundErrCode, fmt.Errorf("no items found"))
 			return
 		}
-		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get wish: %w", err))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to get item: %w", err))
 		return
 	}
 
-	c.JSON(http.StatusOK, mapStoreWishToWishlistItem(wish))
+	count, err = s.db.CreateWishSplitRequest(c, store.CreateWishSplitRequestParams{
+		ListID:  wish.WishlistID,
+		OwnerID: wish.OwnerID,
+		WishID:  wish.ID,
+		UserID:  authData.User.ID,
+	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to create split request: %w", err))
+		return
+	}
+	if count == 0 {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("failed to create split request: rows count 0"))
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

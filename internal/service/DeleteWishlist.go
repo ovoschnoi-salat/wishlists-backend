@@ -39,10 +39,20 @@ func (s *Service) DeleteWishlist(c *gin.Context) {
 		return
 	}
 
-	count, err := s.db.DeleteWishlist(c, store.DeleteWishlistParams{
+	count, err := s.db.CheckUserOwnsWishlist(c, store.CheckUserOwnsWishlistParams{
 		ID:      wishlistID,
 		OwnerID: authData.User.ID,
 	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wishlist: %w", err))
+		return
+	}
+	if count == 0 {
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("no access to wishlist"))
+		return
+	}
+
+	count, err = s.db.DeleteWishlist(c, wishlistID)
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error deleting wishlist: %w", err))
 		return

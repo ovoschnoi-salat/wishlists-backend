@@ -450,6 +450,100 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/friend/wishlist/wish/split-request": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Friend's Wish"
+                ],
+                "summary": "creates a wishlist item split requests",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "wish id",
+                        "name": "wish_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "tags": [
+                    "Friend's Wish"
+                ],
+                "summary": "creates wish split request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wish ID",
+                        "name": "wish_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/friend/wishlists": {
             "get": {
                 "security": [
@@ -1051,6 +1145,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/subcodeErrors.Response"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -1159,6 +1259,63 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/wishlist/item/split-requests": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wish"
+                ],
+                "summary": "returns wish split requests",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Wishlist item ID",
+                        "name": "item_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.GetSplitRequestsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/subcodeErrors.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/subcodeErrors.Response"
                         }
@@ -1332,6 +1489,9 @@ const docTemplate = `{
                 "is_private": {
                     "type": "boolean"
                 },
+                "split_request_privacy": {
+                    "$ref": "#/definitions/service.SplitRequestPrivacy"
+                },
                 "title": {
                     "type": "string"
                 },
@@ -1409,6 +1569,20 @@ const docTemplate = `{
                 }
             }
         },
+        "service.GetSplitRequestsResponse": {
+            "type": "object",
+            "properties": {
+                "request_from_user_exists": {
+                    "type": "boolean"
+                },
+                "split_requests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.Friend"
+                    }
+                }
+            }
+        },
         "service.IncomingFriendsRequestsCountResponse": {
             "type": "object",
             "properties": {
@@ -1416,6 +1590,19 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "service.SplitRequestPrivacy": {
+            "type": "string",
+            "enum": [
+                "unknown",
+                "invisible_to_owner",
+                "visible_to_owner"
+            ],
+            "x-enum-varnames": [
+                "SplitRequestPrivacyUnknown",
+                "SplitRequestPrivacyInvisibleToOwner",
+                "SplitRequestPrivacyVisibleToOwner"
+            ]
         },
         "service.UserSettings": {
             "type": "object",
@@ -1445,6 +1632,9 @@ const docTemplate = `{
                 },
                 "share_uuid": {
                     "type": "string"
+                },
+                "split_request_privacy": {
+                    "$ref": "#/definitions/service.SplitRequestPrivacy"
                 },
                 "title": {
                     "type": "string"

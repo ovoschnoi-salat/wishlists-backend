@@ -6,6 +6,7 @@ import (
 	"backend/internal/subcodeErrors"
 	"backend/internal/subcodeErrors/codes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -67,16 +68,20 @@ func (s *Service) CreateUserWishlistItem(c *gin.Context) {
 		return
 	}
 
-	_, err = s.db.GetUserWishlist(c, store.GetUserWishlistParams{
+	count, err := s.db.CheckUserOwnsWishlist(c, store.CheckUserOwnsWishlistParams{
 		ID:      req.WishlistID,
 		OwnerID: authData.User.ID,
 	})
 	if err != nil {
-		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error creating item: %w", err))
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wishlist: %w", err))
+		return
+	}
+	if count == 0 {
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("no access to wishlist"))
 		return
 	}
 
-	item, err := s.db.CreateWishlistItem(c, store.CreateWishlistItemParams{
+	item, err := s.db.CreateWish(c, store.CreateWishParams{
 		WishlistID:  req.WishlistID,
 		OwnerID:     authData.User.ID,
 		Title:       req.Title,
@@ -90,10 +95,10 @@ func (s *Service) CreateUserWishlistItem(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, mapStoreWishlistItemToWishlistItem(item))
+	c.JSON(http.StatusOK, mapStoreWishToWishlistItem(item))
 }
 
-func mapStoreWishlistItemToWishlistItem(item store.WishlistItem) WishlistItem {
+func mapStoreWishToWishlistItem(item store.WishlistItem) WishlistItem {
 	// Parse links from JSON bytes
 	var links []WishlistItemLink
 	if len(item.Links) > 2 {

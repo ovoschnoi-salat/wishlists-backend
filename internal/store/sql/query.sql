@@ -38,8 +38,7 @@ WHERE share_uuid = $1;
 -- name: GetUserWishlist :one
 SELECT *
 FROM wishlists
-WHERE id = $1
-  AND owner_id = $2;
+WHERE id = $1;
 
 -- name: GetUserWishlists :many
 SELECT *
@@ -48,8 +47,8 @@ WHERE owner_id = $1
 ORDER BY id;
 
 -- name: CreateWishlist :one
-INSERT INTO wishlists (owner_id, title, description, is_private)
-VALUES ($1, $2, $3, $4)
+INSERT INTO wishlists (owner_id, title, description, is_private, split_request_privacy)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: UpdateWishlist :one
@@ -57,16 +56,16 @@ UPDATE wishlists
 SET updated_at  = NOW(),
     title       = $1,
     description = $2,
-    is_private  = $3
-WHERE id = $4
-  AND owner_id = $5
+    is_private  = $3,
+    split_request_privacy = $4
+WHERE id = $5
+  AND owner_id = $6
 RETURNING *;
 
 -- name: DeleteWishlist :execrows
 DELETE
 FROM wishlists
-WHERE id = $1
-  AND owner_id = $2;
+WHERE id = $1;
 
 -- name: CreateFriendsRequest :execrows
 INSERT INTO friends_requests (user_id_from, user_id_to)
@@ -142,7 +141,6 @@ WHERE user_id = $1 AND friend_id = $2
 SELECT *
 FROM wishlist_items
 WHERE wishlist_id = $1
-  AND owner_id = $2
 ORDER BY wishlist_items.id;
 
 -- name: GetFriendWishlistItems :many
@@ -160,19 +158,12 @@ WHERE wishlist_id = $1
                              AND wishlist_access_list.user_id = $2)))
 ORDER BY wishlist_items.id;
 
--- name: GetWishlistItem :one
+-- name: GetWish :one
 SELECT *
 FROM wishlist_items
 WHERE id = $1;
 
--- name: GetUserWishlistItem :one
-SELECT *
-FROM wishlist_items
-WHERE id = $1
-  AND owner_id = $2
-ORDER BY wishlist_items.id;
-
--- name: CreateWishlistItem :one
+-- name: CreateWish :one
 INSERT INTO wishlist_items (wishlist_id, owner_id, title, description, price, links, reservable)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
@@ -202,16 +193,13 @@ SET updated_at  = NOW(),
 WHERE owner_id = $1 AND reserved_by = $2
    OR reserved_by = $1 AND owner_id = $2;
 
--- name: CheckUserHasAccessToPrivateWishlist :one
-SELECT *
-FROM wishlist_access_list
-WHERE list_id = $1
-  AND user_id = $2;
+-- name: ResetWishlistItemsSplitRequestsForFriend :execrows
+DELETE FROM wishlist_items_split_requests
+WHERE list_id = $1 AND user_id = $2;
 
--- name: ReserveWishlistItem :execrows
-UPDATE wishlist_items
-SET updated_at  = NOW(),
-    reserved_by = $2
+-- name: CheckUserHasAccessToWish :one
+SELECT COUNT(*) wishlist_items
+FROM wishlist_items
 WHERE wishlist_items.id = $1
   AND wishlist_items.reserved_by IS NULL
   AND EXISTS(SELECT *
@@ -223,6 +211,25 @@ WHERE wishlist_items.id = $1
                            FROM wishlist_access_list
                            WHERE wishlist_access_list.list_id = wishlists.id
                              AND wishlist_access_list.user_id = $2)));
+
+-- name: CheckUserOwnsWish :one
+SELECT COUNT(*) wishlist_items
+FROM wishlist_items
+WHERE id = $1
+  AND owner_id  = $2;
+
+-- name: CheckUserOwnsWishlist :one
+SELECT COUNT(*) wishlists
+FROM wishlists
+WHERE id = $1
+  AND owner_id  = $2;
+
+-- name: ReserveWishlistItem :execrows
+UPDATE wishlist_items
+SET updated_at  = NOW(),
+    reserved_by = $2
+WHERE wishlist_items.id = $1
+  AND wishlist_items.reserved_by IS NULL;
 
 -- name: CancelWishlistItemReservation :execrows
 UPDATE wishlist_items
@@ -240,11 +247,10 @@ WHERE wishlist_items.id = $1
                            WHERE wishlist_access_list.list_id = wishlists.id
                              AND wishlist_access_list.user_id = $2)));
 
--- name: DeleteWishlistItem :execrows
+-- name: DeleteWish :execrows
 DELETE
 FROM wishlist_items
-WHERE id = $1
-  AND owner_id = $2;
+WHERE id = $1;
 
 -- name: GetFriendWishlists :many
 SELECT *
@@ -301,3 +307,15 @@ WHERE owner_id = $1
 DELETE
 FROM wishlist_access_list
 WHERE list_id = $1;
+
+-- name: GetWishSplitRequests :many
+SELECT *
+FROM users
+WHERE id IN (SELECT user_id FROM wishlist_items_split_requests WHERE wish_id = $1);
+
+-- name: CreateWishSplitRequest :execrows
+INSERT INTO wishlist_items_split_requests (list_id, owner_id, wish_id, user_id)
+VALUES ($1, $2, $3, $4);
+
+-- name: DeleteWishSplitRequest :execrows
+DELETE FROM wishlist_items_split_requests WHERE wish_id = $1 AND user_id = $2;

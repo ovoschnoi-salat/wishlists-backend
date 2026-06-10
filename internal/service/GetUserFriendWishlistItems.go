@@ -6,6 +6,7 @@ import (
 	"backend/internal/subcodeErrors"
 	"backend/internal/subcodeErrors/codes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -50,10 +51,20 @@ func (s *Service) GetUserFriendWishlistItems(c *gin.Context) {
 		return
 	}
 
-	items, err := s.db.GetFriendWishlistItems(c, store.GetFriendWishlistItemsParams{
-		WishlistID: wishlistID,
-		FriendID:   authData.User.ID,
+	count, err := s.db.CheckIfUserHasAccessToWishlist(c, store.CheckIfUserHasAccessToWishlistParams{
+		ID:       wishlistID,
+		FriendID: authData.User.ID,
 	})
+	if err != nil {
+		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wish: %w", err))
+		return
+	}
+	if count == 0 {
+		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("no access to wish"))
+		return
+	}
+
+	items, err := s.db.GetWishlistItems(c, wishlistID)
 	if err != nil {
 		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error getting friend wishlist items: %w", err))
 		return
