@@ -14,9 +14,11 @@ import (
 )
 
 type FriendWishlist struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	ID                  int64               `json:"id"`
+	Title               string              `json:"title"`
+	Description         string              `json:"description"`
+	IsPrivate           bool                `json:"is_private"`
+	SplitRequestPrivacy SplitRequestPrivacy `json:"split_request_privacy"`
 }
 
 // GetUserFriendWishlists godoc
@@ -66,14 +68,16 @@ func (s *Service) GetUserFriendWishlists(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, mapStoreWishlistsToWishlists(wishlists))
+	c.JSON(http.StatusOK, mapStoreWishlistsToFriendWishlists(wishlists))
 }
 
 func mapStoreWishlistToFriendWishlist(wishlist store.Wishlist) FriendWishlist {
 	return FriendWishlist{
-		ID:          wishlist.ID,
-		Title:       wishlist.Title,
-		Description: wishlist.Description,
+		ID:                  wishlist.ID,
+		Title:               wishlist.Title,
+		Description:         wishlist.Description,
+		IsPrivate:           wishlist.IsPrivate,
+		SplitRequestPrivacy: mapStoreSplitRequestPrivacyToSplitRequestPrivacy(wishlist.SplitRequestPrivacy),
 	}
 }
 

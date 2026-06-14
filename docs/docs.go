@@ -1529,6 +1529,12 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_private": {
+                    "type": "boolean"
+                },
+                "split_request_privacy": {
+                    "$ref": "#/definitions/service.SplitRequestPrivacy"
+                },
                 "title": {
                     "type": "string"
                 }
