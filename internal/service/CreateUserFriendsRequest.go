@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -33,23 +34,36 @@ func (s *Service) CreateUserFriendsRequest(c *gin.Context) {
 	}
 
 	friendUsernameStr := c.Query("username")
-
-	if authData.User.Username == friendUsernameStr {
-		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.CantSendRequestToYourselfErrCode, nil)
-		return
-	}
-
-	friendUsernameStr = strings.TrimPrefix(friendUsernameStr, "@")
-	friendUsernameStr = strings.ToLower(friendUsernameStr)
-
-	friend, err := s.db.GetUserByUsername(c, friendUsernameStr)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			subcodeErrors.SendResponse(c, http.StatusNotFound, codes.FriendNotFoundErrCode, nil)
+	var friend store.User
+	var err error
+	if id, err := strconv.ParseInt(friendUsernameStr, 10, 64); err == nil {
+		friend, err = s.db.GetUser(c, id)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				subcodeErrors.SendResponse(c, http.StatusNotFound, codes.FriendNotFoundErrCode, nil)
+				return
+			}
+			subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("cannot get user by username: %w", err))
 			return
 		}
-		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("cannot get user by username: %w", err))
-		return
+	} else {
+		if authData.User.Username == friendUsernameStr {
+			subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.CantSendRequestToYourselfErrCode, nil)
+			return
+		}
+
+		friendUsernameStr = strings.TrimPrefix(friendUsernameStr, "@")
+		friendUsernameStr = strings.ToLower(friendUsernameStr)
+
+		friend, err = s.db.GetUserByUsername(c, friendUsernameStr)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				subcodeErrors.SendResponse(c, http.StatusNotFound, codes.FriendNotFoundErrCode, nil)
+				return
+			}
+			subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("cannot get user by username: %w", err))
+			return
+		}
 	}
 
 	if !friend.OpenToRequests {
