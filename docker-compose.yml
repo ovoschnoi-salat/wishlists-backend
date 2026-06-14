@@ -41,14 +41,14 @@ services:
 
   db:
     container_name: wishlists-db
-    image: postgres:17
+    image: postgres:18
     restart: unless-stopped
     environment:
       POSTGRES_DB: "wishlists"
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASS}"
     volumes:
-      - "${POSTGRES_DATA_FOLDER}:/var/lib/postgresql/data"
+      - "${POSTGRES_DATA_FOLDER}:/var/lib/postgresql"
     networks:
       - backend_network
 
