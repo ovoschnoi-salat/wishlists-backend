@@ -41,19 +41,6 @@ func (s *Service) CreateWishSplitRequest(c *gin.Context) {
 		return
 	}
 
-	count, err := s.db.CheckUserHasAccessToWish(c, store.CheckUserHasAccessToWishParams{
-		ID:       wishID,
-		FriendID: authData.User.ID,
-	})
-	if err != nil {
-		subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wish: %w", err))
-		return
-	}
-	if count == 0 {
-		subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("no access to wish"))
-		return
-	}
-
 	// Get wishlist item
 	wish, err := s.db.GetWish(c, wishID)
 	if err != nil {
@@ -65,7 +52,22 @@ func (s *Service) CreateWishSplitRequest(c *gin.Context) {
 		return
 	}
 
-	count, err = s.db.CreateWishSplitRequest(c, store.CreateWishSplitRequestParams{
+	if wish.OwnerID != authData.User.ID {
+		count, err := s.db.CheckUserHasAccessToWish(c, store.CheckUserHasAccessToWishParams{
+			ID:       wishID,
+			FriendID: authData.User.ID,
+		})
+		if err != nil {
+			subcodeErrors.SendResponse(c, http.StatusInternalServerError, codes.InternalErrCode, fmt.Errorf("error checking access to wish: %w", err))
+			return
+		}
+		if count == 0 {
+			subcodeErrors.SendResponse(c, http.StatusBadRequest, codes.InvalidRequestErrCode, errors.New("no access to wish"))
+			return
+		}
+	}
+
+	count, err := s.db.CreateWishSplitRequest(c, store.CreateWishSplitRequestParams{
 		ListID:  wish.WishlistID,
 		OwnerID: wish.OwnerID,
 		WishID:  wish.ID,
