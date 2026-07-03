@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/caarlos0/env/v11"
-	"github.com/joho/godotenv"
-	"github.com/rs/zerolog/log"
 )
 
 type Stage string
@@ -35,9 +33,9 @@ type Config struct {
 func LoadConfig() (*Config, error) {
 	var cfg Config
 
-	if err := godotenv.Load(".env"); err != nil {
-		log.Warn().Err(err).Msg("error loading .env file")
-	}
+	//if err := godotenv.Load(".env"); err != nil {
+	//	log.Warn().Err(err).Msg("error loading .env file")
+	//}
 
 	if err := env.Parse(&cfg); err != nil {
 		return nil, fmt.Errorf("failed to parse config from env: %w", err)

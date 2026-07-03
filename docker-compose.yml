@@ -5,10 +5,11 @@ services:
     restart: unless-stopped
     volumes:
       - ./configs/loki-config.yml:/etc/loki/local-config.yaml
-      - "${LOKI_DATA_FOLDER}:/tmp/loki"
+      - loki_storage:/loki
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - backend_network
+
 
   alloy:
     image: grafana/alloy:latest
@@ -25,16 +26,29 @@ services:
     networks:
       - backend_network
 
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: wishlists-prometheus
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_storage:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - backend_network
+
+
   grafana:
     image: grafana/grafana:latest
     container_name: wishlists-grafana
     restart: unless-stopped
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin123
-      - GF_USERS_ALLOW_SIGN_UP=false
+      GF_USERS_ALLOW_SIGN_UP: false
     volumes:
-      - grafana-storage:/var/lib/grafana
+      - ./configs/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - grafana_storage:/var/lib/grafana
     networks:
       - backend_network
 
@@ -59,10 +73,10 @@ services:
     build:
       dockerfile: ./Dockerfile
     ports:
-      - "${BACKEND_PORT}:${BACKEND_PORT}"
+      - "${BACKEND_PORT}:8080"
     environment:
       PG_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@wishlists-db:5432/wishlists"
-      LISTEN_ADDR: ":${BACKEND_PORT}"
+      LISTEN_ADDR: ":8080"
       STAGE: "${STAGE}"
       BOT_TOKEN: "${BOT_TOKEN}"
     depends_on:
@@ -71,7 +85,9 @@ services:
       - backend_network
 
 volumes:
-  grafana-storage:
+  grafana_storage:
+  loki_storage:
+  prometheus_storage:
 
 networks:
   backend_network:

@@ -63,17 +63,22 @@ func main() {
 
 	serviceObj := service.NewService(storeObj)
 
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.New()
-	router.Use(uuid.Generator, middlewares.Logger, gin.Recovery())
+	prometheus := middlewares.NewPrometheus()
 
-	router.Use(cors.New(cors.Config{
+	corsMiddleware := cors.New(cors.Config{
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		AllowCredentials: false,
 		MaxAge:           12 * time.Hour,
 		AllowAllOrigins:  true,
-	})) // All origins allowed by default
+	})
+
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
+	prometheus.RegisterGinPrometheusHandler(router)
+	router.Use(uuid.Generator, middlewares.Logger, prometheus.Middleware, corsMiddleware, gin.Recovery())
+
+	router.Use() // All origins allowed by default
 
 	if cfg.Stage == config.DEV {
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
@@ -81,9 +86,9 @@ func main() {
 
 	authGroup := router.Group("", middlewares.NewTgAuthMiddleware(cfg.Bot.Token, storeObj, cfg.Stage))
 
-	if cfg.Stage == config.DEV {
-		authGroup.Use(middlewares.ErrorGenerator)
-	}
+	//if cfg.Stage == config.DEV {
+	//	authGroup.Use(middlewares.ErrorGenerator)
+	//}
 
 	serviceObj.RegisterHandlers(authGroup)
 
