@@ -32,7 +32,7 @@ func NewPrometheus() *Prometheus {
 			prometheus.HistogramOpts{
 				Name:    "api_request_duration_seconds",
 				Help:    "Histogram of response latencies for API requests.",
-				Buckets: []float64{.01, .03, .05, .1, .3},
+				Buckets: []float64{.1, .3, .6, 1, 3},
 			},
 			[]string{"method", "path"},
 		),
