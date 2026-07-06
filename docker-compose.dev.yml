@@ -5,9 +5,11 @@ services:
       - "4317:4317"
       - "4318:4318"
 
-  grafana:
+  prometheus:
     ports:
-      - "3000:3000"
+      - "9090:9090"
+
+  grafana:
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
@@ -15,11 +17,3 @@ services:
   db:
     ports:
       - "5432:5432"
-
-  backend:
-    environment:
-      TLS_CERT_FILE: "/cert.pem"
-      TLS_KEY_FILE: "/key.pem"
-    volumes:
-      - "${TLS_CERT_FILE}:/cert.pem:ro"
-      - "${TLS_KEY_FILE}:/key.pem:ro"

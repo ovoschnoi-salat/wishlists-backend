@@ -81,7 +81,7 @@ func main() {
 	router.Use() // All origins allowed by default
 
 	if cfg.Stage == config.DEV {
-		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+		router.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	}
 
 	authGroup := router.Group("", middlewares.NewTgAuthMiddleware(cfg.Bot.Token, storeObj, cfg.Stage))

@@ -45,7 +45,9 @@ services:
     container_name: wishlists-grafana
     restart: unless-stopped
     environment:
-      GF_USERS_ALLOW_SIGN_UP: false
+      GF_SERVER_DOMAIN: "${DOMAIN:-localhost}"
+      GF_SERVER_ROOT_URL: "https://${DOMAIN:-localhost}:${PORT}/grafana"
+      GR_SERVER_SERVE_FROM_SUB_PATH: true
     volumes:
       - ./configs/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
       - grafana_storage:/var/lib/grafana
@@ -72,17 +74,48 @@ services:
     restart: unless-stopped
     build:
       dockerfile: ./Dockerfile
-    ports:
-      - "${BACKEND_PORT}:8080"
     environment:
       PG_DSN: "postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@wishlists-db:5432/wishlists"
-      LISTEN_ADDR: ":8080"
+      LISTEN_ADDR: ":8000"
       STAGE: "${STAGE}"
       BOT_TOKEN: "${BOT_TOKEN}"
     depends_on:
-      - db
+      db:
+        condition: service_started
     networks:
       - backend_network
+
+
+  nginx:
+    container_name: wishlists-nginx
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "${PORT}:${PORT}"
+#      - "80:80"
+#      - "443:443"
+    environment:
+      PORT: "${PORT}"
+      DOMAIN: "${DOMAIN:-_}"
+      TLS_CERT_FILE: "/cert.pem"
+      TLS_KEY_FILE: "/key.pem"
+      BACKEND_PREFIX: "api"
+      BACKEND_HOST: "backend"
+      BACKEND_PORT: "8000"
+#      S3_PREFIX: ""
+#      S3_HOST: ""
+#      S3_PORT: ""
+      GRAFANA_PREFIX: grafana
+      GRAFANA_HOST: grafana
+      GRAFANA_PORT: 3000
+    volumes:
+      - "${TLS_CERT_FILE}:/cert.pem:ro"
+      - "${TLS_KEY_FILE}:/key.pem:ro"
+#      - ./html:/usr/share/nginx/html:ro
+      - ./configs/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    networks:
+      - backend_network
+
 
 volumes:
   grafana_storage:
